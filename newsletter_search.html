@@ -1008,6 +1008,36 @@
           .join("");
       }
 
+      async function loadJsonCandidate(candidate) {
+        if (typeof window.fetch === "function") {
+          const response = await window.fetch(candidate, { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          return response.json();
+        }
+
+        return new Promise((resolve, reject) => {
+          const request = new XMLHttpRequest();
+          request.open("GET", candidate, true);
+          request.responseType = "text";
+          request.onreadystatechange = () => {
+            if (request.readyState !== 4) return;
+            if (request.status < 200 || request.status >= 300) {
+              reject(new Error(`HTTP ${request.status}`));
+              return;
+            }
+            try {
+              resolve(JSON.parse(request.responseText));
+            } catch (error) {
+              reject(error);
+            }
+          };
+          request.onerror = () => reject(new Error(`Could not load ${candidate}`));
+          request.send();
+        });
+      }
+
       function setData(data, sourceLabel) {
         state.newsletters = Array.isArray(data.newsletters) ? data.newsletters : [];
         state.newsletterMap = new Map(state.newsletters.map((newsletter) => [newsletter.detail_url, newsletter]));
@@ -1023,11 +1053,7 @@
         const candidates = ["./laburnum_enews_archive.json", "./laburnum_enews_this_year.json"];
         for (const candidate of candidates) {
           try {
-            const response = await fetch(candidate, { cache: "no-store" });
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}`);
-            }
-            setData(await response.json(), candidate.replace("./", ""));
+            setData(await loadJsonCandidate(candidate), candidate.replace("./", ""));
             runSearchFromUrl();
             return;
           } catch (error) {
@@ -1478,19 +1504,21 @@
         }
       });
 
-      fileInput.addEventListener("change", async (event) => {
-        const [file] = event.target.files || [];
-        if (!file) return;
+      if (fileInput) {
+        fileInput.addEventListener("change", async (event) => {
+          const [file] = event.target.files || [];
+          if (!file) return;
 
-        try {
-          setData(JSON.parse(await file.text()), file.name);
-          closeEdition();
-          runSearch(queryInput.value);
-        } catch (error) {
-          sourceNameNode.textContent = "manual upload";
-          statusNode.textContent = `Could not read ${file.name}. Make sure it is a valid JSON export from the scraper.`;
-        }
-      });
+          try {
+            setData(JSON.parse(await file.text()), file.name);
+            closeEdition();
+            runSearch(queryInput.value);
+          } catch (error) {
+            sourceNameNode.textContent = "manual upload";
+            statusNode.textContent = `Could not read ${file.name}. Make sure it is a valid JSON export from the scraper.`;
+          }
+        });
+      }
 
       tryAutoLoad();
     </script>
