@@ -1,0 +1,647 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Newsletter Search</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;family=Source+Serif+4:wght@400;600&amp;display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg: #f6f2e9;
+        --panel: rgba(255, 252, 247, 0.9);
+        --panel-strong: #fffdf9;
+        --text: #1b1a17;
+        --muted: #5a574d;
+        --line: rgba(61, 52, 38, 0.12);
+        --accent: #0f6b4b;
+        --accent-2: #c96d31;
+        --shadow: 0 20px 60px rgba(70, 50, 23, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(201, 109, 49, 0.16), transparent 30%),
+          radial-gradient(circle at top right, rgba(15, 107, 75, 0.18), transparent 32%),
+          linear-gradient(180deg, #f8f4eb 0%, #f2eee4 55%, #ece4d7 100%);
+        font-family: "Source Serif 4", Georgia, serif;
+      }
+
+      .page {
+        width: min(1100px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 48px 0 64px;
+      }
+
+      .hero {
+        padding: 36px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: var(--panel);
+        backdrop-filter: blur(16px);
+        box-shadow: var(--shadow);
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: var(--accent);
+        font: 700 0.82rem/1 "Space Grotesk", sans-serif;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font: 700 clamp(2.2rem, 5vw, 4.8rem) / 0.95 "Space Grotesk", sans-serif;
+        letter-spacing: -0.05em;
+      }
+
+      .intro {
+        max-width: 720px;
+        margin: 16px 0 0;
+        color: var(--muted);
+        font-size: 1.08rem;
+        line-height: 1.6;
+      }
+
+      .search-shell {
+        margin-top: 28px;
+      }
+
+      .search-bar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 14px 12px 22px;
+        border: 1px solid rgba(15, 107, 75, 0.15);
+        border-radius: 999px;
+        background: var(--panel-strong);
+        box-shadow: 0 18px 40px rgba(46, 34, 13, 0.08);
+      }
+
+      .search-icon {
+        font-size: 1.25rem;
+        opacity: 0.6;
+      }
+
+      #query {
+        width: 100%;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--text);
+        font: 500 1.1rem/1.4 "Space Grotesk", sans-serif;
+      }
+
+      #query::placeholder {
+        color: #8a8577;
+      }
+
+      .search-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+
+      button,
+      .chip {
+        border: 1px solid transparent;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+        font: 600 0.95rem/1 "Space Grotesk", sans-serif;
+      }
+
+      button:hover,
+      .chip:hover {
+        transform: translateY(-1px);
+      }
+
+      .primary {
+        padding: 14px 18px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent) 0%, #0b4e37 100%);
+        box-shadow: 0 16px 30px rgba(15, 107, 75, 0.22);
+      }
+
+      .secondary {
+        padding: 14px 18px;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.72);
+        border-color: var(--line);
+      }
+
+      .controls {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .file-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font: 500 0.92rem/1.2 "Space Grotesk", sans-serif;
+      }
+
+      input[type="file"] {
+        max-width: 100%;
+      }
+
+      .status {
+        margin-top: 18px;
+        color: var(--muted);
+        font: 500 0.95rem/1.4 "Space Grotesk", sans-serif;
+      }
+
+      .suggestions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .chip {
+        padding: 10px 14px;
+        color: var(--accent);
+        background: rgba(15, 107, 75, 0.08);
+      }
+
+      .results {
+        margin-top: 28px;
+      }
+
+      .summary {
+        margin-bottom: 18px;
+        color: var(--muted);
+        font: 500 0.98rem/1.4 "Space Grotesk", sans-serif;
+      }
+
+      .result-card {
+        margin-bottom: 14px;
+        padding: 22px 24px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: rgba(255, 253, 249, 0.88);
+        box-shadow: 0 10px 30px rgba(63, 48, 26, 0.07);
+      }
+
+      .result-meta {
+        color: var(--accent-2);
+        font: 700 0.78rem/1.2 "Space Grotesk", sans-serif;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .result-title {
+        display: inline-block;
+        margin: 8px 0 8px;
+        color: var(--text);
+        text-decoration: none;
+        font: 700 1.35rem/1.18 "Space Grotesk", sans-serif;
+        letter-spacing: -0.03em;
+      }
+
+      .result-title:hover {
+        color: var(--accent);
+      }
+
+      .result-url {
+        margin: 0 0 10px;
+        color: var(--accent);
+        font: 500 0.9rem/1.4 "Space Grotesk", sans-serif;
+        word-break: break-all;
+      }
+
+      .result-snippet {
+        margin: 0;
+        color: #353127;
+        line-height: 1.65;
+        font-size: 1.02rem;
+      }
+
+      mark {
+        padding: 0 0.16em;
+        border-radius: 0.25em;
+        background: rgba(201, 109, 49, 0.28);
+      }
+
+      .empty {
+        padding: 26px;
+        border: 1px dashed rgba(61, 52, 38, 0.22);
+        border-radius: 20px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.45);
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          width: min(100% - 20px, 1100px);
+          padding: 18px 0 40px;
+        }
+
+        .hero {
+          padding: 22px;
+          border-radius: 24px;
+        }
+
+        .search-bar {
+          padding: 10px 12px 10px 16px;
+        }
+
+        #query {
+          font-size: 1rem;
+        }
+
+        .result-card {
+          padding: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">Laburnum eNews Search</p>
+        <h1>Find the mention you remember.</h1>
+        <p class="intro">
+          Search across the fetched newsletters for this year, rank the closest matches, and scan the surrounding snippet to see
+          whether the topic was actually covered.
+        </p>
+
+        <div class="search-shell">
+          <form id="search-form" class="search-form" autocomplete="off">
+            <div class="search-bar">
+              <span class="search-icon" aria-hidden="true">⌕</span>
+              <input id="query" name="q" type="text" placeholder="Search for ICAS, Susan McLean, enrolment, cyber safety...">
+            </div>
+            <div class="search-actions">
+              <button class="primary" type="submit">Search</button>
+              <button class="secondary" type="button" id="clear-button">Clear</button>
+            </div>
+          </form>
+
+          <div class="controls">
+            <label class="file-label" for="json-file">
+              Optional JSON file:
+              <input id="json-file" type="file" accept=".json,application/json">
+            </label>
+          </div>
+
+          <div class="suggestions" aria-label="Suggested searches">
+            <button class="chip" type="button" data-query="Susan McLean">Susan McLean</button>
+            <button class="chip" type="button" data-query="ICAS">ICAS</button>
+            <button class="chip" type="button" data-query="enrolment">enrolment</button>
+            <button class="chip" type="button" data-query="cyber safety">cyber safety</button>
+            <button class="chip" type="button" data-query="Prep swimming">Prep swimming</button>
+          </div>
+
+          <p id="status" class="status">Loaded 87 article records from laburnum_enews_this_year.json.</p>
+        </div>
+      </section>
+
+      <section class="results">
+        <div id="summary" class="summary">6 results for "Susan McLean"</div>
+        <div id="results">
+              <article class="result-card">
+                <div class="result-meta">14 May 2026 · 10 hits</div>
+                <a class="result-title" href="https://www.laburnumps.vic.edu.au/enews/details/340" target="_blank" rel="noreferrer">
+                  Growing Up Online with Susan McLean
+                </a>
+                <div class="result-url">LPS eNews · 14 May 2026</div>
+                <p class="result-snippet">...ws parents to join the session using an access code supporting live translation in over 100 languages and dialects. Growing up Online with <mark>Susan</mark> <mark>McLean</mark> We invite all parents/carers at LPS to take up the opportunity to attend this important parent seminar. <mark>Susan</mark> is a highly sought after...</p>
+              </article>
+            
+              <article class="result-card">
+                <div class="result-meta">19 March 2026 · 10 hits</div>
+                <a class="result-title" href="https://www.laburnumps.vic.edu.au/enews/details/334" target="_blank" rel="noreferrer">
+                  Susan McLean Parent Seminar- Growing up Online
+                </a>
+                <div class="result-url">LPS eNews · 19 March 2026</div>
+                <p class="result-snippet">Parents please register - Growing up Online with <mark>Susan</mark> <mark>McLean</mark> We invite all parents/carers at LPS to take up the opportunity to attend this important parent seminar. <mark>Susan</mark> is a highly sought after...</p>
+              </article>
+            
+              <article class="result-card">
+                <div class="result-meta">2 Apr 2026 · 10 hits</div>
+                <a class="result-title" href="https://www.laburnumps.vic.edu.au/enews/details/336" target="_blank" rel="noreferrer">
+                  Susan McLean
+                </a>
+                <div class="result-url">LPS eNews · 2 Apr 2026</div>
+                <p class="result-snippet">Parents please register - Growing up Online with <mark>Susan</mark> <mark>McLean</mark> We invite all parents/carers at LPS to take up the opportunity to attend this important parent seminar. <mark>Susan</mark> is a highly sought after...</p>
+              </article>
+            
+              <article class="result-card">
+                <div class="result-meta">30 April 2026 · 10 hits</div>
+                <a class="result-title" href="https://www.laburnumps.vic.edu.au/enews/details/338" target="_blank" rel="noreferrer">
+                  Growing Up Online with Susan McLean
+                </a>
+                <div class="result-url">LPS eNews · 30 April 2026</div>
+                <p class="result-snippet">...ws parents to join the session using an access code supporting live translation in over 100 languages and dialects. Growing up Online with <mark>Susan</mark> <mark>McLean</mark> We invite all parents/carers at LPS to take up the opportunity to attend this important parent seminar. <mark>Susan</mark> is a highly sought after...</p>
+              </article>
+            
+              <article class="result-card">
+                <div class="result-meta">14 May 2026 · 5 hits</div>
+                <a class="result-title" href="https://www.laburnumps.vic.edu.au/enews/details/340" target="_blank" rel="noreferrer">
+                  Principal's Message
+                </a>
+                <div class="result-url">LPS eNews · 14 May 2026</div>
+                <p class="result-snippet">We have been advertising our upcoming Parents Only Cyber Safety Session with <mark>Susan</mark> <mark>McLean</mark> for several months. Thank you to those parents who have registered. As we know this session has the potential to save children from onlin...</p>
+              </article>
+            
+              <article class="result-card">
+                <div class="result-meta">19 February, 2026 · 5 hits</div>
+                <a class="result-title" href="https://www.laburnumps.vic.edu.au/enews/details/330" target="_blank" rel="noreferrer">
+                  What's Happening?
+                </a>
+                <div class="result-url">LPS eNews · 19 February, 2026</div>
+                <p class="result-snippet">...ive further information next week via the Sentral Portal. For further information, please visit nap.edu.au We are pleased to announce that <mark>Susan</mark> <mark>McLean</mark> will be at LPS to present a seminar for parents - Its an online world! <mark>Susan</mark> is a highly sought after and highly respected presenter in th...</p>
+              </article>
+            </div>
+      </section>
+    </main>
+
+    <script>
+      const state = {
+        rawData: null,
+        records: [],
+      };
+
+      const queryInput = document.getElementById("query");
+      const statusNode = document.getElementById("status");
+      const summaryNode = document.getElementById("summary");
+      const resultsNode = document.getElementById("results");
+      const searchForm = document.getElementById("search-form");
+      const clearButton = document.getElementById("clear-button");
+      const fileInput = document.getElementById("json-file");
+
+      function escapeHtml(value) {
+        return value.replace(/[&<>"']/g, (char) => {
+          const map = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          };
+          return map[char];
+        });
+      }
+
+      function normalizeText(value) {
+        return value
+          .toLowerCase()
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function flattenNewsletters(data) {
+        return (data.newsletters || []).flatMap((newsletter) =>
+          (newsletter.articles || []).map((article) => ({
+            issueTitle: newsletter.issue_title || newsletter.title || "",
+            issueDate: newsletter.issue_date || newsletter.published_date || "",
+            publishedDate: newsletter.published_date || "",
+            detailUrl: newsletter.detail_url || "",
+            articleTitle: article.title || "",
+            bodyText: article.body_text || "",
+          })),
+        );
+      }
+
+      function setData(data, sourceLabel) {
+        state.rawData = data;
+        state.records = flattenNewsletters(data);
+        statusNode.textContent = `Loaded ${state.records.length} article records from ${sourceLabel}.`;
+      }
+
+      async function tryAutoLoad() {
+        try {
+          const response = await fetch("./laburnum_enews_this_year.json", { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const data = await response.json();
+          setData(data, "laburnum_enews_this_year.json");
+          runSearchFromUrl();
+        } catch (error) {
+          statusNode.textContent =
+            "Auto-load did not work. If you opened this file directly, choose the JSON file below or serve this folder locally.";
+        }
+      }
+
+      function tokenize(query) {
+        return normalizeText(query).split(" ").filter(Boolean);
+      }
+
+      function scoreRecord(record, query) {
+        const cleanQuery = normalizeText(query);
+        if (!cleanQuery) {
+          return null;
+        }
+
+        const title = normalizeText(record.articleTitle);
+        const body = normalizeText(record.bodyText);
+        const issue = normalizeText(`${record.issueTitle} ${record.issueDate}`);
+        const tokens = tokenize(query);
+
+        let score = 0;
+        let hitCount = 0;
+
+        if (title.includes(cleanQuery)) {
+          score += 18;
+          hitCount += 3;
+        }
+        if (issue.includes(cleanQuery)) {
+          score += 9;
+          hitCount += 2;
+        }
+        if (body.includes(cleanQuery)) {
+          score += 12;
+          hitCount += 3;
+        }
+
+        for (const token of tokens) {
+          if (title.includes(token)) {
+            score += 6;
+            hitCount += 1;
+          }
+          if (issue.includes(token)) {
+            score += 3;
+            hitCount += 1;
+          }
+          if (body.includes(token)) {
+            score += 2;
+            hitCount += 1;
+          }
+        }
+
+        if (!score) {
+          return null;
+        }
+
+        return {
+          ...record,
+          score,
+          hitCount,
+          snippet: buildSnippet(record.bodyText, query),
+        };
+      }
+
+      function buildSnippet(text, query) {
+        const lowerText = text.toLowerCase();
+        const lowerQuery = query.toLowerCase();
+        let start = lowerText.indexOf(lowerQuery);
+
+        if (start === -1) {
+          for (const token of tokenize(query)) {
+            start = lowerText.indexOf(token);
+            if (start !== -1) {
+              break;
+            }
+          }
+        }
+
+        if (start === -1) {
+          return text.slice(0, 220) + (text.length > 220 ? "..." : "");
+        }
+
+        const radius = 140;
+        const snippetStart = Math.max(0, start - radius);
+        const snippetEnd = Math.min(text.length, start + query.length + radius);
+        let snippet = text.slice(snippetStart, snippetEnd).replace(/\s+/g, " ").trim();
+        if (snippetStart > 0) {
+          snippet = "..." + snippet;
+        }
+        if (snippetEnd < text.length) {
+          snippet += "...";
+        }
+        return snippet;
+      }
+
+      function highlightText(text, query) {
+        let highlighted = escapeHtml(text);
+        for (const token of tokenize(query).sort((a, b) => b.length - a.length)) {
+          const pattern = new RegExp(`(${token.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")})`, "ig");
+          highlighted = highlighted.replace(pattern, "<mark>$1</mark>");
+        }
+        return highlighted;
+      }
+
+      function searchRecords(query) {
+        return state.records
+          .map((record) => scoreRecord(record, query))
+          .filter(Boolean)
+          .sort((a, b) => b.score - a.score || b.hitCount - a.hitCount || a.publishedDate.localeCompare(b.publishedDate));
+      }
+
+      function renderEmpty(message) {
+        summaryNode.textContent = "";
+        resultsNode.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
+      }
+
+      function renderResults(query, results) {
+        if (!query.trim()) {
+          renderEmpty("Try a keyword or phrase to search the newsletters.");
+          return;
+        }
+
+        if (!results.length) {
+          renderEmpty(`No matches found for "${query}". Try a broader keyword or load a different JSON file.`);
+          return;
+        }
+
+        summaryNode.textContent = `${results.length} result${results.length === 1 ? "" : "s"} for "${query}"`;
+        resultsNode.innerHTML = results
+          .map(
+            (result) => `
+              <article class="result-card">
+                <div class="result-meta">${escapeHtml(result.publishedDate)} · ${result.hitCount} hit${result.hitCount === 1 ? "" : "s"}</div>
+                <a class="result-title" href="${escapeHtml(result.detailUrl)}" target="_blank" rel="noreferrer">
+                  ${escapeHtml(result.articleTitle)}
+                </a>
+                <div class="result-url">${escapeHtml(result.issueTitle)}${result.issueDate ? ` · ${escapeHtml(result.issueDate)}` : ""}</div>
+                <p class="result-snippet">${highlightText(result.snippet, query)}</p>
+              </article>
+            `,
+          )
+          .join("");
+      }
+
+      function updateUrlQuery(query) {
+        const url = new URL(window.location.href);
+        if (query.trim()) {
+          url.searchParams.set("q", query.trim());
+        } else {
+          url.searchParams.delete("q");
+        }
+        window.history.replaceState({}, "", url);
+      }
+
+      function runSearch(query) {
+        if (!state.records.length) {
+          renderEmpty("Newsletter data is not loaded yet.");
+          return;
+        }
+        updateUrlQuery(query);
+        renderResults(query, searchRecords(query));
+      }
+
+      function runSearchFromUrl() {
+        const url = new URL(window.location.href);
+        const initialQuery = url.searchParams.get("q") || "";
+        queryInput.value = initialQuery;
+        if (initialQuery.trim()) {
+          runSearch(initialQuery);
+        } else {
+          renderEmpty("Try a keyword or phrase to search the newsletters.");
+        }
+      }
+
+      searchForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        runSearch(queryInput.value);
+      });
+
+      clearButton.addEventListener("click", () => {
+        queryInput.value = "";
+        queryInput.focus();
+        runSearch("");
+      });
+
+      document.querySelectorAll("[data-query]").forEach((button) => {
+        button.addEventListener("click", () => {
+          queryInput.value = button.dataset.query || "";
+          runSearch(queryInput.value);
+        });
+      });
+
+      fileInput.addEventListener("change", async (event) => {
+        const [file] = event.target.files || [];
+        if (!file) {
+          return;
+        }
+        try {
+          const text = await file.text();
+          const data = JSON.parse(text);
+          setData(data, file.name);
+          runSearch(queryInput.value);
+        } catch (error) {
+          statusNode.textContent = `Could not read ${file.name}. Make sure it is a valid JSON export from the scraper.`;
+        }
+      });
+
+      tryAutoLoad();
+    </script>
+  
+
+</body></html>

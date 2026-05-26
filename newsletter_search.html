@@ -1,0 +1,1391 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Laburnum Newsletter Reader</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600;6..72,700&family=Source+Sans+3:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --paper: #f6efe2;
+        --paper-strong: #fcf8ef;
+        --paper-soft: #efe4d2;
+        --ink: #17130d;
+        --muted: #62594d;
+        --rule: rgba(54, 43, 28, 0.18);
+        --rule-strong: rgba(54, 43, 28, 0.34);
+        --accent: #1e5d47;
+        --accent-soft: rgba(30, 93, 71, 0.08);
+        --warm: #8e4d26;
+        --shadow: 0 24px 70px rgba(56, 40, 23, 0.12);
+        --radius-lg: 28px;
+        --radius-md: 18px;
+        --radius-pill: 999px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(142, 77, 38, 0.12), transparent 28%),
+          radial-gradient(circle at top right, rgba(30, 93, 71, 0.12), transparent 26%),
+          linear-gradient(180deg, var(--paper) 0%, var(--paper-soft) 100%);
+        font-family: "Source Sans 3", sans-serif;
+      }
+
+      .page {
+        width: min(1200px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 24px 0 56px;
+      }
+
+      .masthead {
+        padding: 28px 28px 24px;
+        border: 1px solid var(--rule);
+        border-radius: var(--radius-lg);
+        background:
+          linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(248, 240, 226, 0.92));
+        box-shadow: var(--shadow);
+      }
+
+      .masthead-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--rule);
+        color: var(--muted);
+        font-size: 0.88rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .brand {
+        margin: 18px 0 8px;
+        font-family: "Newsreader", serif;
+        font-size: clamp(2.7rem, 7vw, 5.2rem);
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+        text-align: center;
+      }
+
+      .subhead {
+        margin: 0 auto;
+        max-width: 820px;
+        color: var(--muted);
+        font-size: 1.02rem;
+        line-height: 1.7;
+        text-align: center;
+      }
+
+      .search-desk {
+        margin-top: 22px;
+        padding: 22px;
+        border: 1px solid var(--rule);
+        border-radius: 22px;
+        background: rgba(255, 251, 244, 0.76);
+      }
+
+      .search-bar {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 10px;
+        align-items: center;
+      }
+
+      #query {
+        width: 100%;
+        padding: 16px 18px;
+        border: 1px solid rgba(54, 43, 28, 0.14);
+        border-radius: var(--radius-pill);
+        background: rgba(255, 255, 255, 0.82);
+        color: var(--ink);
+        font: 600 1rem/1.3 "Source Sans 3", sans-serif;
+        outline: none;
+      }
+
+      #query:focus {
+        border-color: rgba(30, 93, 71, 0.42);
+        box-shadow: 0 0 0 4px rgba(30, 93, 71, 0.08);
+      }
+
+      button,
+      .chip,
+      .source-link,
+      .toc-button {
+        border: 1px solid transparent;
+        border-radius: var(--radius-pill);
+        cursor: pointer;
+        text-decoration: none;
+        transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease;
+        font: 700 0.92rem/1 "Source Sans 3", sans-serif;
+      }
+
+      button:hover,
+      .chip:hover,
+      .source-link:hover,
+      .toc-button:hover {
+        transform: translateY(-1px);
+      }
+
+      .primary {
+        padding: 15px 18px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent) 0%, #154434 100%);
+        box-shadow: 0 10px 24px rgba(30, 93, 71, 0.2);
+      }
+
+      .secondary {
+        padding: 15px 18px;
+        color: var(--ink);
+        border-color: var(--rule);
+        background: rgba(255, 255, 255, 0.78);
+      }
+
+      .search-meta {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 20px;
+        align-items: start;
+        margin-top: 16px;
+      }
+
+      .suggestions,
+      .results-actions,
+      .desk-tools,
+      .edition-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .chip {
+        padding: 10px 14px;
+        color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .chip.active {
+        color: #fff;
+        background: linear-gradient(135deg, var(--warm), #6f391a);
+      }
+
+      .toolline {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+
+      .tool-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 13px;
+        border: 1px solid var(--rule);
+        border-radius: var(--radius-pill);
+        background: rgba(255, 255, 255, 0.62);
+        color: var(--muted);
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .tool-badge strong {
+        color: var(--ink);
+      }
+
+      .status,
+      .summary,
+      .results-note,
+      .file-label {
+        color: var(--muted);
+        font-size: 0.94rem;
+        line-height: 1.5;
+      }
+
+      .status {
+        margin: 14px 0 0;
+      }
+
+      .results-shell {
+        margin-top: 24px;
+      }
+
+      .results-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: end;
+        margin-bottom: 16px;
+      }
+
+      .summary,
+      .results-note {
+        margin: 0;
+      }
+
+      .results-list {
+        display: grid;
+        gap: 16px;
+      }
+
+      .clip-card {
+        display: grid;
+        gap: 14px;
+        padding: 22px;
+        border: 1px solid var(--rule);
+        border-radius: 22px;
+        background:
+          linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(248, 240, 226, 0.9));
+        box-shadow: 0 12px 30px rgba(56, 40, 23, 0.08);
+      }
+
+      .clip-image {
+        width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        border: 1px solid var(--rule);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.6);
+      }
+
+      .clip-meta {
+        color: var(--warm);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .clip-title {
+        margin: 0;
+        font-family: "Newsreader", serif;
+        font-size: clamp(1.65rem, 2vw, 2rem);
+        line-height: 1;
+        letter-spacing: -0.04em;
+      }
+
+      .clip-issue {
+        margin: 0;
+        color: var(--accent);
+        font-size: 0.93rem;
+        font-weight: 700;
+      }
+
+      .clip-snippet,
+      .paragraph-copy {
+        margin: 0;
+        color: #2e271f;
+        font-size: 1rem;
+        line-height: 1.7;
+      }
+
+      .results-actions {
+        margin-top: 2px;
+      }
+
+      .reveal-button {
+        padding: 11px 15px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent) 0%, #154434 100%);
+      }
+
+      .source-link {
+        padding: 11px 15px;
+        color: var(--accent);
+        border-color: rgba(30, 93, 71, 0.18);
+        background: rgba(30, 93, 71, 0.06);
+      }
+
+      .paragraph-panel {
+        margin-top: 6px;
+        padding-top: 14px;
+        border-top: 1px solid var(--rule);
+      }
+
+      .paragraph-label {
+        margin: 0 0 8px;
+        color: var(--warm);
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .paragraph-copy + .paragraph-copy {
+        margin-top: 14px;
+      }
+
+      .empty {
+        padding: 28px;
+        border: 1px dashed var(--rule-strong);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.45);
+        color: var(--muted);
+      }
+
+      mark {
+        padding: 0 0.15em;
+        border-radius: 0.25em;
+        background: rgba(232, 198, 105, 0.5);
+      }
+
+      .viewer[hidden],
+      .photo-viewer[hidden] {
+        display: none;
+      }
+
+      .viewer,
+      .photo-viewer {
+        position: fixed;
+        inset: 0;
+      }
+
+      .viewer {
+        z-index: 50;
+      }
+
+      .photo-viewer {
+        z-index: 70;
+      }
+
+      .viewer-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(16, 12, 8, 0.46);
+        backdrop-filter: blur(5px);
+      }
+
+      .photo-viewer .viewer-backdrop {
+        background: rgba(10, 8, 6, 0.82);
+      }
+
+      .viewer-shell {
+        position: relative;
+        width: min(1280px, calc(100% - 20px));
+        height: min(94vh, 980px);
+        margin: 3vh auto;
+        border: 1px solid var(--rule-strong);
+        border-radius: 26px;
+        background: linear-gradient(180deg, var(--paper-strong), #f4ead9);
+        box-shadow: 0 34px 100px rgba(16, 12, 8, 0.28);
+        overflow: hidden;
+      }
+
+      .photo-shell {
+        position: relative;
+        width: min(1200px, calc(100% - 20px));
+        height: min(94vh, 920px);
+        margin: 3vh auto;
+        padding: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 24px;
+        background: rgba(21, 16, 11, 0.88);
+        box-shadow: 0 34px 100px rgba(16, 12, 8, 0.48);
+      }
+
+      .photo-shell-inner {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        height: 100%;
+        gap: 12px;
+      }
+
+      .photo-toolbar,
+      .viewer-topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .viewer-topbar {
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--rule);
+        background: rgba(255, 251, 244, 0.82);
+      }
+
+      .photo-toolbar {
+        color: #f8f1e4;
+      }
+
+      .viewer-title-group {
+        min-width: 0;
+      }
+
+      .viewer-kicker {
+        margin: 0;
+        color: var(--warm);
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .viewer-title,
+      .photo-toolbar h3 {
+        margin: 4px 0 0;
+        font-family: "Newsreader", serif;
+        line-height: 1;
+      }
+
+      .viewer-title {
+        font-size: 1.75rem;
+        letter-spacing: -0.03em;
+      }
+
+      .photo-toolbar h3 {
+        font-size: 1.55rem;
+      }
+
+      .viewer-close {
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        color: var(--ink);
+        border-color: var(--rule);
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      .viewer-layout {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        height: calc(100% - 72px);
+      }
+
+      .edition-nav {
+        border-right: 1px solid var(--rule);
+        padding: 20px 18px;
+        overflow: auto;
+        background: rgba(255, 250, 243, 0.8);
+      }
+
+      .edition-meta {
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .edition-nameplate {
+        margin: 0;
+        font-family: "Newsreader", serif;
+        font-size: 2rem;
+        line-height: 0.95;
+      }
+
+      .edition-date {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .edition-count {
+        margin: 10px 0 0;
+        color: var(--accent);
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      .edition-actions {
+        margin-top: 14px;
+      }
+
+      .toc-title {
+        margin: 18px 0 10px;
+        color: var(--muted);
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .toc-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .toc-button {
+        width: 100%;
+        padding: 12px 14px;
+        color: var(--ink);
+        text-align: left;
+        border-color: rgba(54, 43, 28, 0.12);
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .toc-button.active {
+        color: #fff;
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--warm), #6f391a);
+      }
+
+      .edition-main {
+        overflow: auto;
+        padding: 22px;
+      }
+
+      .edition-header {
+        padding-bottom: 18px;
+        border-bottom: 3px double var(--rule-strong);
+      }
+
+      .edition-volume {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .edition-headline {
+        margin: 14px 0 0;
+        font-family: "Newsreader", serif;
+        font-size: clamp(2.6rem, 4vw, 4.3rem);
+        line-height: 0.93;
+        letter-spacing: -0.05em;
+      }
+
+      .edition-standfirst {
+        max-width: 780px;
+        margin: 14px 0 0;
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.7;
+      }
+
+      .edition-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 22px;
+      }
+
+      .edition-article {
+        padding: 18px 18px 16px;
+        border: 1px solid var(--rule);
+        border-radius: 18px;
+        background: rgba(255, 253, 249, 0.86);
+      }
+
+      .edition-article.featured {
+        grid-column: 1 / -1;
+      }
+
+      .edition-article.focused {
+        border-color: rgba(30, 93, 71, 0.32);
+        box-shadow: 0 0 0 4px rgba(30, 93, 71, 0.08);
+      }
+
+      .article-number {
+        margin: 0;
+        color: var(--warm);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .article-headline {
+        margin: 10px 0 12px;
+        font-family: "Newsreader", serif;
+        font-size: 2rem;
+        line-height: 0.98;
+        letter-spacing: -0.04em;
+      }
+
+      .article-media {
+        display: grid;
+        gap: 10px;
+        margin: 0 0 14px;
+      }
+
+      .article-media.single {
+        grid-template-columns: 1fr;
+      }
+
+      .article-media.gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .article-media img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        border: 1px solid var(--rule);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.66);
+        cursor: zoom-in;
+      }
+
+      .edition-article.featured .article-media img {
+        height: 320px;
+      }
+
+      .article-body {
+        column-gap: 22px;
+      }
+
+      .edition-article.featured .article-body {
+        column-count: 2;
+      }
+
+      .article-body p {
+        margin: 0 0 14px;
+        break-inside: avoid;
+      }
+
+      .photo-stage {
+        display: grid;
+        place-items: center;
+        min-height: 0;
+      }
+
+      .photo-stage img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .photo-caption {
+        color: rgba(248, 241, 228, 0.8);
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 1080px) {
+        .viewer-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .edition-nav {
+          border-right: 0;
+          border-bottom: 1px solid var(--rule);
+        }
+
+        .edition-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .edition-article.featured .article-body {
+          column-count: 1;
+        }
+
+        .edition-article.featured .article-media img {
+          height: 260px;
+        }
+      }
+
+      @media (max-width: 860px) {
+        .search-meta,
+        .masthead-top,
+        .results-head {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .search-bar {
+          grid-template-columns: 1fr;
+        }
+
+        .viewer-shell,
+        .photo-shell {
+          width: calc(100% - 10px);
+          height: calc(100vh - 10px);
+          margin: 5px;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          width: min(100% - 16px, 1200px);
+          padding: 14px 0 36px;
+        }
+
+        .masthead,
+        .search-desk {
+          padding: 18px;
+        }
+
+        .brand {
+          font-size: clamp(2.3rem, 13vw, 3.9rem);
+        }
+
+        .clip-card,
+        .edition-article {
+          padding: 18px;
+        }
+
+        .article-media.gallery {
+          grid-template-columns: 1fr;
+        }
+
+        .article-media img,
+        .edition-article.featured .article-media img {
+          height: 220px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="masthead">
+        <div class="masthead-top">
+          <span>Laburnum Primary School Archive</span>
+          <span>Parent edition reader</span>
+        </div>
+        <h1 class="brand">The Laburnum Reader</h1>
+        <p class="subhead">
+          Search school newsletters like a newspaper archive, then read the full issue in a cleaner editorial format built from the newsletter data, including the published photos.
+        </p>
+
+        <div class="search-desk">
+          <form id="search-form" autocomplete="off" aria-label="Newsletter search">
+            <div class="search-bar">
+              <input id="query" name="q" type="text" placeholder="Search for Year 6 Camp, ICAS, Susan McLean, enrolment, cyber safety..." />
+              <button class="primary" type="submit">Search</button>
+              <button class="secondary" type="button" id="clear-button">Clear</button>
+            </div>
+          </form>
+
+          <div class="search-meta">
+            <div class="suggestions" aria-label="Suggested searches">
+              <button class="chip" type="button" data-query="Susan McLean">Susan McLean</button>
+              <button class="chip" type="button" data-query="ICAS">ICAS</button>
+              <button class="chip" type="button" data-query="Year 6 Camp">Year 6 Camp</button>
+              <button class="chip" type="button" data-query="enrolment">Enrolment</button>
+              <button class="chip" type="button" data-query="cyber safety">Cyber safety</button>
+            </div>
+
+            <div class="desk-tools">
+              <label class="file-label" for="json-file">
+                Optional JSON file:
+                <input id="json-file" type="file" accept=".json,application/json" />
+              </label>
+            </div>
+          </div>
+
+          <div class="toolline">
+            <div class="tool-badge">Loaded records <strong id="dataset-count">0</strong></div>
+            <div class="tool-badge">Source <strong id="source-name">loading...</strong></div>
+            <div class="tool-badge">Reader mode <strong>formatted issue view</strong></div>
+          </div>
+
+          <p id="status" class="status" aria-live="polite">Loading newsletter data...</p>
+        </div>
+      </section>
+
+      <section class="results-shell">
+        <div class="results-head">
+          <p id="summary" class="summary"></p>
+          <p class="results-note">Search results can show the matching paragraph or open the entire edition with photos included.</p>
+        </div>
+        <div id="results" class="results-list"></div>
+      </section>
+    </main>
+
+    <div id="viewer" class="viewer" hidden>
+      <div class="viewer-backdrop" data-action="close-viewer"></div>
+      <section class="viewer-shell" role="dialog" aria-modal="true" aria-labelledby="viewer-title">
+        <div class="viewer-topbar">
+          <div class="viewer-title-group">
+            <p class="viewer-kicker">Formatted issue reader</p>
+            <h2 class="viewer-title" id="viewer-title">Newsletter edition</h2>
+          </div>
+          <button class="viewer-close secondary" type="button" data-action="close-viewer" aria-label="Close issue reader">X</button>
+        </div>
+        <div class="viewer-layout">
+          <aside class="edition-nav">
+            <div id="edition-meta" class="edition-meta"></div>
+            <p class="toc-title">Contents</p>
+            <div id="edition-toc" class="toc-list"></div>
+          </aside>
+          <main id="edition-main" class="edition-main"></main>
+        </div>
+      </section>
+    </div>
+
+    <div id="photo-viewer" class="photo-viewer" hidden>
+      <div class="viewer-backdrop" data-action="close-photo-viewer"></div>
+      <section class="photo-shell" role="dialog" aria-modal="true" aria-labelledby="photo-viewer-title">
+        <div class="photo-shell-inner">
+          <div class="photo-toolbar">
+            <div>
+              <p class="viewer-kicker">Newsletter photo</p>
+              <h3 id="photo-viewer-title">Image preview</h3>
+            </div>
+            <button class="viewer-close secondary" type="button" data-action="close-photo-viewer" aria-label="Close photo viewer">X</button>
+          </div>
+          <div class="photo-stage">
+            <img id="photo-viewer-image" alt="" />
+          </div>
+          <div id="photo-viewer-caption" class="photo-caption"></div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const state = {
+        newsletters: [],
+        newsletterMap: new Map(),
+        records: [],
+        currentResults: [],
+        currentQuery: "",
+        currentEditionUrl: "",
+      };
+
+      const queryInput = document.getElementById("query");
+      const statusNode = document.getElementById("status");
+      const summaryNode = document.getElementById("summary");
+      const resultsNode = document.getElementById("results");
+      const searchForm = document.getElementById("search-form");
+      const clearButton = document.getElementById("clear-button");
+      const fileInput = document.getElementById("json-file");
+      const datasetCountNode = document.getElementById("dataset-count");
+      const sourceNameNode = document.getElementById("source-name");
+      const viewerNode = document.getElementById("viewer");
+      const editionMetaNode = document.getElementById("edition-meta");
+      const editionTocNode = document.getElementById("edition-toc");
+      const editionMainNode = document.getElementById("edition-main");
+      const viewerTitleNode = document.getElementById("viewer-title");
+      const photoViewerNode = document.getElementById("photo-viewer");
+      const photoViewerTitleNode = document.getElementById("photo-viewer-title");
+      const photoViewerImageNode = document.getElementById("photo-viewer-image");
+      const photoViewerCaptionNode = document.getElementById("photo-viewer-caption");
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>\"']/g, (char) => {
+          const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+          return map[char];
+        });
+      }
+
+      function normalizeText(value) {
+        return String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+      }
+
+      function tokenize(query) {
+        return normalizeText(query).split(" ").filter(Boolean);
+      }
+
+      function splitParagraphs(text) {
+        return String(text || "")
+          .split(/\n{2,}|\n/g)
+          .map((paragraph) => paragraph.replace(/\s+/g, " ").trim())
+          .filter(Boolean);
+      }
+
+      function getIssueIdFromUrl(url) {
+        const match = String(url || "").match(/details\/(\d+)/);
+        return match ? match[1] : "";
+      }
+
+      function flattenNewsletters(newsletters) {
+        return newsletters.flatMap((newsletter) =>
+          (newsletter.articles || []).map((article, articleIndex) => ({
+            issueId: getIssueIdFromUrl(newsletter.detail_url),
+            issueTitle: newsletter.issue_title || newsletter.title || "",
+            issueDate: newsletter.issue_date || newsletter.published_date || "",
+            publishedDate: newsletter.published_date || "",
+            detailUrl: newsletter.detail_url || "",
+            articleTitle: article.title || "",
+            articleIndex,
+            articleCount: newsletter.article_count || (newsletter.articles || []).length || 0,
+            bodyText: article.body_text || "",
+            imageUrls: Array.isArray(article.image_urls) ? article.image_urls : [],
+            leadImage: Array.isArray(article.image_urls) && article.image_urls.length ? article.image_urls[0] : "",
+          })),
+        );
+      }
+
+      function setActiveChip(query) {
+        const normalized = normalizeText(query);
+        document.querySelectorAll(".chip").forEach((chip) => {
+          chip.classList.toggle("active", normalized !== "" && normalizeText(chip.dataset.query || "") === normalized);
+        });
+      }
+
+      function setData(data, sourceLabel) {
+        state.newsletters = Array.isArray(data.newsletters) ? data.newsletters : [];
+        state.newsletterMap = new Map(state.newsletters.map((newsletter) => [newsletter.detail_url, newsletter]));
+        state.records = flattenNewsletters(state.newsletters);
+        datasetCountNode.textContent = state.records.length.toLocaleString();
+        sourceNameNode.textContent = sourceLabel;
+        statusNode.textContent = `Loaded ${state.records.length} article records from ${sourceLabel}.`;
+      }
+
+      async function tryAutoLoad() {
+        try {
+          const response = await fetch("./laburnum_enews_this_year.json", { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          setData(await response.json(), "laburnum_enews_this_year.json");
+          runSearchFromUrl();
+        } catch (error) {
+          sourceNameNode.textContent = "manual upload";
+          statusNode.textContent =
+            "Auto-load did not work. If you opened this file directly, choose the JSON file below or serve this folder locally.";
+        }
+      }
+
+      function buildSnippet(text, query) {
+        const lowerText = text.toLowerCase();
+        const lowerQuery = query.toLowerCase();
+        let start = lowerText.indexOf(lowerQuery);
+
+        if (start === -1) {
+          for (const token of tokenize(query)) {
+            start = lowerText.indexOf(token);
+            if (start !== -1) break;
+          }
+        }
+
+        if (start === -1) {
+          return text.slice(0, 240) + (text.length > 240 ? "..." : "");
+        }
+
+        const radius = 150;
+        const snippetStart = Math.max(0, start - radius);
+        const snippetEnd = Math.min(text.length, start + query.length + radius);
+        let snippet = text.slice(snippetStart, snippetEnd).replace(/\s+/g, " ").trim();
+        if (snippetStart > 0) snippet = "..." + snippet;
+        if (snippetEnd < text.length) snippet += "...";
+        return snippet;
+      }
+
+      function extractRelevantParagraphs(text, query, limit = 2) {
+        const paragraphs = splitParagraphs(text);
+        const lowerQuery = query.toLowerCase();
+        const tokens = tokenize(query);
+
+        return paragraphs
+          .map((paragraph) => {
+            const lowerParagraph = paragraph.toLowerCase();
+            let score = 0;
+            if (lowerParagraph.includes(lowerQuery)) score += 10;
+            for (const token of tokens) {
+              if (lowerParagraph.includes(token)) score += 2;
+            }
+            return { paragraph, score };
+          })
+          .filter((entry) => entry.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, limit)
+          .map((entry) => entry.paragraph);
+      }
+
+      function highlightText(text, query) {
+        let highlighted = escapeHtml(text);
+        for (const token of tokenize(query).sort((a, b) => b.length - a.length)) {
+          const pattern = new RegExp(`(${token.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")})`, "ig");
+          highlighted = highlighted.replace(pattern, "<mark>$1</mark>");
+        }
+        return highlighted;
+      }
+
+      function scoreRecord(record, query) {
+        const cleanQuery = normalizeText(query);
+        if (!cleanQuery) return null;
+
+        const title = normalizeText(record.articleTitle);
+        const body = normalizeText(record.bodyText);
+        const issue = normalizeText(`${record.issueTitle} ${record.issueDate}`);
+        const tokens = tokenize(query);
+
+        let score = 0;
+        let hitCount = 0;
+
+        if (title.includes(cleanQuery)) {
+          score += 18;
+          hitCount += 3;
+        }
+        if (issue.includes(cleanQuery)) {
+          score += 9;
+          hitCount += 2;
+        }
+        if (body.includes(cleanQuery)) {
+          score += 12;
+          hitCount += 3;
+        }
+
+        for (const token of tokens) {
+          if (title.includes(token)) {
+            score += 6;
+            hitCount += 1;
+          }
+          if (issue.includes(token)) {
+            score += 3;
+            hitCount += 1;
+          }
+          if (body.includes(token)) {
+            score += 2;
+            hitCount += 1;
+          }
+        }
+
+        if (!score) return null;
+
+        return {
+          ...record,
+          score,
+          hitCount,
+          snippet: buildSnippet(record.bodyText, query),
+          relevantParagraphs: extractRelevantParagraphs(record.bodyText, query),
+        };
+      }
+
+      function searchRecords(query) {
+        return state.records
+          .map((record) => scoreRecord(record, query))
+          .filter(Boolean)
+          .sort((a, b) => b.score - a.score || b.hitCount - a.hitCount || a.publishedDate.localeCompare(b.publishedDate));
+      }
+
+      function renderEmpty(message) {
+        summaryNode.textContent = "";
+        resultsNode.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
+      }
+
+      function renderClipImage(result) {
+        return result.leadImage
+          ? `<img class="clip-image" src="${escapeHtml(result.leadImage)}" alt="${escapeHtml(result.articleTitle)}" loading="lazy" referrerpolicy="no-referrer" />`
+          : "";
+      }
+
+      function renderResults(query, results) {
+        state.currentResults = results;
+        state.currentQuery = query;
+        setActiveChip(query);
+
+        if (!query.trim()) {
+          renderEmpty("Try a keyword or phrase to search the newsletters.");
+          return;
+        }
+
+        if (!results.length) {
+          renderEmpty(`No matches found for "${query}". Try a broader keyword or load a different JSON file.`);
+          return;
+        }
+
+        summaryNode.textContent = `${results.length} result${results.length === 1 ? "" : "s"} for "${query}"`;
+        resultsNode.innerHTML = results
+          .map(
+            (result, index) => `
+              <article class="clip-card">
+                ${renderClipImage(result)}
+                <div class="clip-meta">${escapeHtml(result.publishedDate)} · ${result.hitCount} hit${result.hitCount === 1 ? "" : "s"} · ${escapeHtml(String(result.articleCount))} article issue</div>
+                <h2 class="clip-title">${escapeHtml(result.articleTitle)}</h2>
+                <p class="clip-issue">${escapeHtml(result.issueTitle)}${result.issueDate ? ` · ${escapeHtml(result.issueDate)}` : ""}</p>
+                <p class="clip-snippet">${highlightText(result.snippet, query)}</p>
+                <div class="results-actions">
+                  <button class="reveal-button" type="button" data-action="toggle-paragraph" data-index="${index}">
+                    ${result.relevantParagraphs.length ? "Show relevant paragraph" : "Show article excerpt"}
+                  </button>
+                  <button class="secondary" type="button" data-action="open-edition" data-index="${index}">
+                    Read full edition
+                  </button>
+                </div>
+                <div class="paragraph-panel" id="paragraph-${index}" hidden>
+                  <p class="paragraph-label">Matching excerpt</p>
+                  ${
+                    result.relevantParagraphs.length
+                      ? result.relevantParagraphs.map((paragraph) => `<p class="paragraph-copy">${highlightText(paragraph, query)}</p>`).join("")
+                      : `<p class="paragraph-copy">${highlightText(result.bodyText.slice(0, 900), query)}</p>`
+                  }
+                </div>
+              </article>
+            `,
+          )
+          .join("");
+      }
+
+      function updateUrlQuery(query, issueId = "") {
+        const url = new URL(window.location.href);
+        if (query.trim()) url.searchParams.set("q", query.trim());
+        else url.searchParams.delete("q");
+        if (issueId) url.searchParams.set("issue", issueId);
+        else url.searchParams.delete("issue");
+        window.history.replaceState({}, "", url);
+      }
+
+      function buildEditionMeta(newsletter) {
+        const articleCount = (newsletter.articles || []).length;
+        return `
+          <h3 class="edition-nameplate">${escapeHtml(newsletter.issue_title || newsletter.title || "Laburnum Newsletter")}</h3>
+          <p class="edition-date">${escapeHtml(newsletter.issue_date || newsletter.published_date || "")}</p>
+          <p class="edition-count">${articleCount} article${articleCount === 1 ? "" : "s"} in this edition</p>
+        `;
+      }
+
+      function buildEditionTOC(newsletter, focusedIndex) {
+        return (newsletter.articles || [])
+          .map(
+            (article, index) => `
+              <button class="toc-button ${index === focusedIndex ? "active" : ""}" type="button" data-action="scroll-article" data-article-index="${index}">
+                ${escapeHtml(article.title || `Article ${index + 1}`)}
+              </button>
+            `,
+          )
+          .join("");
+      }
+
+      function renderArticleMedia(newsletter, article, articleIndex) {
+        const imageUrls = Array.isArray(article.image_urls) ? article.image_urls : [];
+        if (!imageUrls.length) return "";
+
+        const maxImages = articleIndex === 0 ? 4 : 6;
+        const mediaClass = imageUrls.length === 1 ? "single" : "gallery";
+
+        return `
+          <div class="article-media ${mediaClass}">
+            ${imageUrls
+              .slice(0, maxImages)
+              .map(
+                (imageUrl, imageIndex) => `
+                  <img
+                    src="${escapeHtml(imageUrl)}"
+                    alt="${escapeHtml((article.title || `Article ${articleIndex + 1}`) + ` photo ${imageIndex + 1}`)}"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                    data-action="open-photo"
+                    data-photo-src="${escapeHtml(imageUrl)}"
+                    data-photo-title="${escapeHtml(article.title || `Article ${articleIndex + 1}`)}"
+                    data-photo-caption="${escapeHtml((newsletter.issue_date || newsletter.published_date || "") + " · " + (article.title || `Article ${articleIndex + 1}`))}"
+                  />
+                `,
+              )
+              .join("")}
+          </div>
+        `;
+      }
+
+      function buildEditionArticles(newsletter, query, focusedIndex) {
+        return (newsletter.articles || [])
+          .map((article, index) => {
+            const paragraphs = splitParagraphs(article.body_text || "");
+            const classes = ["edition-article"];
+            if (index === 0) classes.push("featured");
+            if (index === focusedIndex) classes.push("focused");
+
+            return `
+              <article class="${classes.join(" ")}" id="edition-article-${index}">
+                <p class="article-number">Article ${index + 1}</p>
+                <h3 class="article-headline">${escapeHtml(article.title || `Article ${index + 1}`)}</h3>
+                ${renderArticleMedia(newsletter, article, index)}
+                <div class="article-body">
+                  ${paragraphs.map((paragraph) => `<p>${highlightText(paragraph, query)}</p>`).join("")}
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function openEdition(detailUrl, focusedArticleTitle = "") {
+        const newsletter = state.newsletterMap.get(detailUrl);
+        if (!newsletter) return;
+
+        const focusedIndex = (newsletter.articles || []).findIndex(
+          (article) => normalizeText(article.title || "") === normalizeText(focusedArticleTitle),
+        );
+
+        state.currentEditionUrl = detailUrl;
+        viewerTitleNode.textContent = newsletter.issue_title || newsletter.title || "Newsletter edition";
+        editionMetaNode.innerHTML = buildEditionMeta(newsletter);
+        editionTocNode.innerHTML = buildEditionTOC(newsletter, focusedIndex);
+        editionMainNode.innerHTML = `
+          <header class="edition-header">
+            <p class="edition-volume">Laburnum archive issue</p>
+            <h2 class="edition-headline">${escapeHtml(newsletter.issue_title || newsletter.title || "Newsletter edition")}</h2>
+            <p class="edition-standfirst">${escapeHtml(newsletter.issue_date || newsletter.published_date || "")} · Read the full issue in a cleaner newspaper format, with every article and published photo rebuilt from the archive data.</p>
+          </header>
+          <div class="edition-grid">${buildEditionArticles(newsletter, state.currentQuery, focusedIndex)}</div>
+        `;
+
+        viewerNode.hidden = false;
+        document.body.style.overflow = "hidden";
+        updateUrlQuery(state.currentQuery, getIssueIdFromUrl(detailUrl));
+
+        if (focusedIndex >= 0) {
+          setTimeout(() => {
+            document.getElementById(`edition-article-${focusedIndex}`)?.scrollIntoView({ block: "start", behavior: "smooth" });
+          }, 50);
+        } else {
+          editionMainNode.scrollTo({ top: 0, behavior: "instant" });
+        }
+      }
+
+      function closeEdition() {
+        viewerNode.hidden = true;
+        document.body.style.overflow = "";
+        state.currentEditionUrl = "";
+        updateUrlQuery(state.currentQuery);
+      }
+
+      function openPhoto(src, title, caption) {
+        photoViewerTitleNode.textContent = title || "Newsletter photo";
+        photoViewerImageNode.src = src;
+        photoViewerImageNode.alt = title || "Newsletter photo";
+        photoViewerCaptionNode.textContent = caption || "";
+        photoViewerNode.hidden = false;
+      }
+
+      function closePhoto() {
+        photoViewerNode.hidden = true;
+        photoViewerImageNode.removeAttribute("src");
+        photoViewerCaptionNode.textContent = "";
+      }
+
+      function runSearch(query) {
+        if (!state.records.length) {
+          renderEmpty("Newsletter data is not loaded yet.");
+          return;
+        }
+        updateUrlQuery(query, state.currentEditionUrl ? getIssueIdFromUrl(state.currentEditionUrl) : "");
+        renderResults(query, searchRecords(query));
+      }
+
+      function runSearchFromUrl() {
+        const url = new URL(window.location.href);
+        const initialQuery = url.searchParams.get("q") || "";
+        const issueId = url.searchParams.get("issue") || "";
+        queryInput.value = initialQuery;
+
+        if (initialQuery.trim()) {
+          renderResults(initialQuery, searchRecords(initialQuery));
+        } else {
+          setActiveChip("");
+          renderEmpty("Try a keyword or phrase to search the newsletters.");
+        }
+
+        if (issueId) {
+          const matchingNewsletter = state.newsletters.find((newsletter) => getIssueIdFromUrl(newsletter.detail_url) === issueId);
+          if (matchingNewsletter) openEdition(matchingNewsletter.detail_url);
+        }
+      }
+
+      searchForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        closeEdition();
+        runSearch(queryInput.value);
+      });
+
+      clearButton.addEventListener("click", () => {
+        queryInput.value = "";
+        closeEdition();
+        setActiveChip("");
+        renderEmpty("Try a keyword or phrase to search the newsletters.");
+      });
+
+      document.querySelectorAll(".chip").forEach((button) => {
+        button.addEventListener("click", () => {
+          queryInput.value = button.dataset.query || "";
+          closeEdition();
+          runSearch(queryInput.value);
+        });
+      });
+
+      resultsNode.addEventListener("click", (event) => {
+        const toggle = event.target.closest('[data-action="toggle-paragraph"]');
+        if (toggle) {
+          const index = toggle.dataset.index;
+          const panel = document.getElementById(`paragraph-${index}`);
+          if (!panel) return;
+          const isHidden = panel.hasAttribute("hidden");
+          if (isHidden) {
+            panel.removeAttribute("hidden");
+            toggle.textContent = "Hide paragraph";
+          } else {
+            panel.setAttribute("hidden", "");
+            toggle.textContent = "Show relevant paragraph";
+          }
+          return;
+        }
+
+        const openEditionButton = event.target.closest('[data-action="open-edition"]');
+        if (openEditionButton) {
+          const result = state.currentResults[Number(openEditionButton.dataset.index)];
+          if (result) openEdition(result.detailUrl, result.articleTitle);
+        }
+      });
+
+      viewerNode.addEventListener("click", (event) => {
+        const closeTrigger = event.target.closest('[data-action="close-viewer"]');
+        if (closeTrigger) {
+          closeEdition();
+          return;
+        }
+
+        const photoTrigger = event.target.closest('[data-action="open-photo"]');
+        if (photoTrigger) {
+          openPhoto(
+            photoTrigger.dataset.photoSrc || "",
+            photoTrigger.dataset.photoTitle || "Newsletter photo",
+            photoTrigger.dataset.photoCaption || "",
+          );
+          return;
+        }
+
+        const scrollTrigger = event.target.closest('[data-action="scroll-article"]');
+        if (scrollTrigger) {
+          const articleIndex = Number(scrollTrigger.dataset.articleIndex);
+          document.querySelectorAll(".toc-button").forEach((button, index) => {
+            button.classList.toggle("active", index === articleIndex);
+          });
+          document.getElementById(`edition-article-${articleIndex}`)?.scrollIntoView({ block: "start", behavior: "smooth" });
+        }
+      });
+
+      photoViewerNode.addEventListener("click", (event) => {
+        if (event.target.closest('[data-action="close-photo-viewer"]')) {
+          closePhoto();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !photoViewerNode.hidden) {
+          closePhoto();
+          return;
+        }
+        if (event.key === "Escape" && !viewerNode.hidden) {
+          closeEdition();
+        }
+      });
+
+      fileInput.addEventListener("change", async (event) => {
+        const [file] = event.target.files || [];
+        if (!file) return;
+
+        try {
+          setData(JSON.parse(await file.text()), file.name);
+          closeEdition();
+          runSearch(queryInput.value);
+        } catch (error) {
+          sourceNameNode.textContent = "manual upload";
+          statusNode.textContent = `Could not read ${file.name}. Make sure it is a valid JSON export from the scraper.`;
+        }
+      });
+
+      tryAutoLoad();
+    </script>
+  </body>
+</html>
