@@ -90,12 +90,31 @@
       }
 
       .search-desk,
-      .browse-shell {
+      .browse-shell,
+      .results-shell {
         margin-top: 22px;
         padding: 22px;
         border: 1px solid var(--rule);
         border-radius: 22px;
         background: rgba(255, 251, 244, 0.76);
+      }
+
+      .content-columns {
+        display: grid;
+        grid-template-columns: minmax(320px, 400px) minmax(0, 1fr);
+        gap: 22px;
+        margin-top: 22px;
+        align-items: start;
+      }
+
+      .browse-shell,
+      .results-shell {
+        margin-top: 0;
+      }
+
+      .browse-shell {
+        position: sticky;
+        top: 18px;
       }
 
       .search-bar {
@@ -254,7 +273,7 @@
       }
 
       .issue-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: 1fr;
         margin-top: 16px;
       }
 
@@ -676,7 +695,15 @@
         border-radius: 14px;
       }
 
-      @media (max-width: 1080px) {
+      @media (max-width: 1000px) {
+        .content-columns {
+          grid-template-columns: 1fr;
+        }
+
+        .browse-shell {
+          position: static;
+        }
+
         .issue-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -732,7 +759,8 @@
 
         .masthead,
         .search-desk,
-        .browse-shell {
+        .browse-shell,
+        .results-shell {
           padding: 18px;
         }
 
@@ -805,25 +833,27 @@
           <p id="status" class="status" aria-live="polite">Loading newsletter data...</p>
         </div>
 
-        <section class="browse-shell" aria-labelledby="browse-title">
-          <div class="browse-head">
-            <div>
-              <h2 id="browse-title" class="browse-title">Browse issues by year</h2>
-              <p class="browse-copy">Choose a school year, then open any published issue by its date card.</p>
+        <div class="content-columns">
+          <section class="browse-shell" aria-labelledby="browse-title">
+            <div class="browse-head">
+              <div>
+                <h2 id="browse-title" class="browse-title">Browse issues by year</h2>
+                <p class="browse-copy">Choose a school year, then open any published issue by its date card.</p>
+              </div>
+              <p id="issue-summary" class="issue-summary"></p>
             </div>
-            <p id="issue-summary" class="issue-summary"></p>
-          </div>
-          <div id="year-filters" class="year-filters"></div>
-          <div id="issue-cards" class="issue-grid"></div>
-        </section>
-      </section>
+            <div id="year-filters" class="year-filters"></div>
+            <div id="issue-cards" class="issue-grid"></div>
+          </section>
 
-      <section class="results-shell">
-        <div class="results-head">
-          <p id="summary" class="summary"></p>
-          <p class="results-note">Search results can show the matching paragraph or open the entire edition with photos included.</p>
+          <section class="results-shell">
+            <div class="results-head">
+              <p id="summary" class="summary"></p>
+              <p class="results-note">Search results can show the matching paragraph or open the entire edition with photos included.</p>
+            </div>
+            <div id="results" class="results-list"></div>
+          </section>
         </div>
-        <div id="results" class="results-list"></div>
       </section>
     </main>
 
