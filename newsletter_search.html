@@ -32,10 +32,6 @@
         box-sizing: border-box;
       }
 
-      html {
-        scroll-behavior: smooth;
-      }
-
       body {
         margin: 0;
         min-height: 100vh;
@@ -93,7 +89,8 @@
         text-align: center;
       }
 
-      .search-desk {
+      .search-desk,
+      .browse-shell {
         margin-top: 22px;
         padding: 22px;
         border: 1px solid var(--rule);
@@ -127,7 +124,8 @@
       button,
       .chip,
       .source-link,
-      .toc-button {
+      .toc-button,
+      .year-filter {
         border: 1px solid transparent;
         border-radius: var(--radius-pill);
         cursor: pointer;
@@ -139,7 +137,8 @@
       button:hover,
       .chip:hover,
       .source-link:hover,
-      .toc-button:hover {
+      .toc-button:hover,
+      .year-filter:hover {
         transform: translateY(-1px);
       }
 
@@ -157,10 +156,16 @@
         background: rgba(255, 255, 255, 0.78);
       }
 
+      .search-meta,
+      .browse-head,
+      .results-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: end;
+      }
+
       .search-meta {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 20px;
         align-items: start;
         margin-top: 16px;
       }
@@ -168,20 +173,24 @@
       .suggestions,
       .results-actions,
       .desk-tools,
-      .edition-actions {
+      .edition-actions,
+      .year-filters,
+      .issue-card-actions {
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
         align-items: center;
       }
 
-      .chip {
+      .chip,
+      .year-filter {
         padding: 10px 14px;
         color: var(--accent);
         background: var(--accent-soft);
       }
 
-      .chip.active {
+      .chip.active,
+      .year-filter.active {
         color: #fff;
         background: linear-gradient(135deg, var(--warm), #6f391a);
       }
@@ -213,47 +222,92 @@
       .status,
       .summary,
       .results-note,
-      .file-label {
+      .file-label,
+      .browse-copy,
+      .issue-summary {
         color: var(--muted);
         font-size: 0.94rem;
         line-height: 1.5;
       }
 
-      .status {
+      .status,
+      .issue-summary {
         margin: 14px 0 0;
       }
 
-      .results-shell {
-        margin-top: 24px;
-      }
-
-      .results-head {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        align-items: end;
-        margin-bottom: 16px;
-      }
-
-      .summary,
-      .results-note {
+      .browse-title {
         margin: 0;
+        font-family: "Newsreader", serif;
+        font-size: 2rem;
+        line-height: 1;
+        letter-spacing: -0.03em;
       }
 
+      .browse-copy {
+        margin: 6px 0 0;
+      }
+
+      .issue-grid,
       .results-list {
         display: grid;
         gap: 16px;
       }
 
+      .issue-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-top: 16px;
+      }
+
+      .issue-card,
       .clip-card {
         display: grid;
-        gap: 14px;
-        padding: 22px;
+        gap: 12px;
+        padding: 20px;
         border: 1px solid var(--rule);
         border-radius: 22px;
-        background:
-          linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(248, 240, 226, 0.9));
+        background: linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(248, 240, 226, 0.9));
         box-shadow: 0 12px 30px rgba(56, 40, 23, 0.08);
+      }
+
+      .issue-card-meta,
+      .clip-meta {
+        color: var(--warm);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .issue-card-title,
+      .clip-title {
+        margin: 0;
+        font-family: "Newsreader", serif;
+        line-height: 1;
+        letter-spacing: -0.04em;
+      }
+
+      .issue-card-title {
+        font-size: 1.45rem;
+      }
+
+      .clip-title {
+        font-size: clamp(1.65rem, 2vw, 2rem);
+      }
+
+      .issue-card-date,
+      .issue-card-copy,
+      .clip-issue,
+      .clip-snippet,
+      .paragraph-copy {
+        margin: 0;
+        color: #2e271f;
+        font-size: 0.98rem;
+        line-height: 1.65;
+      }
+
+      .clip-issue {
+        color: var(--accent);
+        font-weight: 700;
       }
 
       .clip-image {
@@ -263,41 +317,6 @@
         border: 1px solid var(--rule);
         border-radius: 16px;
         background: rgba(255, 255, 255, 0.6);
-      }
-
-      .clip-meta {
-        color: var(--warm);
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-
-      .clip-title {
-        margin: 0;
-        font-family: "Newsreader", serif;
-        font-size: clamp(1.65rem, 2vw, 2rem);
-        line-height: 1;
-        letter-spacing: -0.04em;
-      }
-
-      .clip-issue {
-        margin: 0;
-        color: var(--accent);
-        font-size: 0.93rem;
-        font-weight: 700;
-      }
-
-      .clip-snippet,
-      .paragraph-copy {
-        margin: 0;
-        color: #2e271f;
-        font-size: 1rem;
-        line-height: 1.7;
-      }
-
-      .results-actions {
-        margin-top: 2px;
       }
 
       .reveal-button {
@@ -439,18 +458,22 @@
       }
 
       .viewer-title,
-      .photo-toolbar h3 {
-        margin: 4px 0 0;
+      .photo-toolbar h3,
+      .edition-nameplate,
+      .article-headline,
+      .edition-headline {
         font-family: "Newsreader", serif;
         line-height: 1;
       }
 
       .viewer-title {
+        margin: 4px 0 0;
         font-size: 1.75rem;
         letter-spacing: -0.03em;
       }
 
       .photo-toolbar h3 {
+        margin: 4px 0 0;
         font-size: 1.55rem;
       }
 
@@ -483,22 +506,21 @@
 
       .edition-nameplate {
         margin: 0;
-        font-family: "Newsreader", serif;
         font-size: 2rem;
-        line-height: 0.95;
       }
 
-      .edition-date {
-        margin: 10px 0 0;
+      .edition-date,
+      .edition-count,
+      .toc-title,
+      .edition-standfirst,
+      .photo-caption {
         color: var(--muted);
-        font-size: 0.95rem;
-        line-height: 1.5;
+        font-size: 0.92rem;
+        line-height: 1.55;
       }
 
       .edition-count {
-        margin: 10px 0 0;
         color: var(--accent);
-        font-size: 0.88rem;
         font-weight: 700;
       }
 
@@ -506,9 +528,10 @@
         margin-top: 14px;
       }
 
-      .toc-title {
+      .toc-title,
+      .article-number {
         margin: 18px 0 10px;
-        color: var(--muted);
+        color: var(--warm);
         font-size: 0.76rem;
         font-weight: 700;
         letter-spacing: 0.12em;
@@ -556,7 +579,6 @@
 
       .edition-headline {
         margin: 14px 0 0;
-        font-family: "Newsreader", serif;
         font-size: clamp(2.6rem, 4vw, 4.3rem);
         line-height: 0.93;
         letter-spacing: -0.05em;
@@ -565,9 +587,6 @@
       .edition-standfirst {
         max-width: 780px;
         margin: 14px 0 0;
-        color: var(--muted);
-        font-size: 1rem;
-        line-height: 1.7;
       }
 
       .edition-grid {
@@ -595,18 +614,11 @@
 
       .article-number {
         margin: 0;
-        color: var(--warm);
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
       }
 
       .article-headline {
         margin: 10px 0 12px;
-        font-family: "Newsreader", serif;
         font-size: 2rem;
-        line-height: 0.98;
         letter-spacing: -0.04em;
       }
 
@@ -662,16 +674,13 @@
         max-height: 100%;
         object-fit: contain;
         border-radius: 14px;
-        background: rgba(255, 255, 255, 0.04);
-      }
-
-      .photo-caption {
-        color: rgba(248, 241, 228, 0.8);
-        font-size: 0.92rem;
-        line-height: 1.5;
       }
 
       @media (max-width: 1080px) {
+        .issue-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .viewer-layout {
           grid-template-columns: 1fr;
         }
@@ -696,8 +705,9 @@
 
       @media (max-width: 860px) {
         .search-meta,
-        .masthead-top,
-        .results-head {
+        .browse-head,
+        .results-head,
+        .masthead-top {
           flex-direction: column;
           align-items: flex-start;
         }
@@ -721,7 +731,8 @@
         }
 
         .masthead,
-        .search-desk {
+        .search-desk,
+        .browse-shell {
           padding: 18px;
         }
 
@@ -730,10 +741,12 @@
         }
 
         .clip-card,
-        .edition-article {
+        .edition-article,
+        .issue-card {
           padding: 18px;
         }
 
+        .issue-grid,
         .article-media.gallery {
           grid-template-columns: 1fr;
         }
@@ -754,7 +767,7 @@
         </div>
         <h1 class="brand">The Laburnum Reader</h1>
         <p class="subhead">
-          Search school newsletters like a newspaper archive, then read the full issue in a cleaner editorial format built from the newsletter data, including the published photos.
+          Search school newsletters like a newspaper archive, browse by year, and open a whole edition in a cleaner editorial format built from the newsletter data.
         </p>
 
         <div class="search-desk">
@@ -791,6 +804,18 @@
 
           <p id="status" class="status" aria-live="polite">Loading newsletter data...</p>
         </div>
+
+        <section class="browse-shell" aria-labelledby="browse-title">
+          <div class="browse-head">
+            <div>
+              <h2 id="browse-title" class="browse-title">Browse issues by year</h2>
+              <p class="browse-copy">Choose a school year, then open any published issue by its date card.</p>
+            </div>
+            <p id="issue-summary" class="issue-summary"></p>
+          </div>
+          <div id="year-filters" class="year-filters"></div>
+          <div id="issue-cards" class="issue-grid"></div>
+        </section>
       </section>
 
       <section class="results-shell">
@@ -850,6 +875,7 @@
         currentResults: [],
         currentQuery: "",
         currentEditionUrl: "",
+        currentYearFilter: "",
       };
 
       const queryInput = document.getElementById("query");
@@ -861,6 +887,9 @@
       const fileInput = document.getElementById("json-file");
       const datasetCountNode = document.getElementById("dataset-count");
       const sourceNameNode = document.getElementById("source-name");
+      const yearFiltersNode = document.getElementById("year-filters");
+      const issueCardsNode = document.getElementById("issue-cards");
+      const issueSummaryNode = document.getElementById("issue-summary");
       const viewerNode = document.getElementById("viewer");
       const editionMetaNode = document.getElementById("edition-meta");
       const editionTocNode = document.getElementById("edition-toc");
@@ -902,6 +931,7 @@
         return newsletters.flatMap((newsletter) =>
           (newsletter.articles || []).map((article, articleIndex) => ({
             issueId: getIssueIdFromUrl(newsletter.detail_url),
+            year: newsletter.year || newsletter.issue_year || newsletter.published_year || "",
             issueTitle: newsletter.issue_title || newsletter.title || "",
             issueDate: newsletter.issue_date || newsletter.published_date || "",
             publishedDate: newsletter.published_date || "",
@@ -923,28 +953,91 @@
         });
       }
 
+      function getAvailableYears() {
+        return [...new Set(state.newsletters.map((newsletter) => String(newsletter.year || "")).filter(Boolean))].sort((a, b) => Number(b) - Number(a));
+      }
+
+      function getFilteredNewsletters() {
+        if (!state.currentYearFilter) {
+          return state.newsletters;
+        }
+        return state.newsletters.filter((newsletter) => String(newsletter.year || "") === String(state.currentYearFilter));
+      }
+
+      function renderIssueBrowser() {
+        const years = getAvailableYears();
+        if (!years.length) {
+          yearFiltersNode.innerHTML = "";
+          issueCardsNode.innerHTML = `<div class="empty">No newsletter issues available yet.</div>`;
+          issueSummaryNode.textContent = "";
+          return;
+        }
+
+        if (!state.currentYearFilter) {
+          state.currentYearFilter = years[0];
+        }
+
+        yearFiltersNode.innerHTML = years
+          .map(
+            (year) => `
+              <button class="year-filter ${String(year) === String(state.currentYearFilter) ? "active" : ""}" type="button" data-action="filter-year" data-year="${escapeHtml(year)}">
+                ${escapeHtml(year)}
+              </button>
+            `,
+          )
+          .join("");
+
+        const filtered = getFilteredNewsletters();
+        issueSummaryNode.textContent = `${filtered.length} issue${filtered.length === 1 ? "" : "s"} available for ${state.currentYearFilter}`;
+        issueCardsNode.innerHTML = filtered
+          .map(
+            (newsletter) => `
+              <article class="issue-card">
+                <div class="issue-card-meta">${escapeHtml(String(newsletter.year || ""))} · ${escapeHtml(String(newsletter.article_count || 0))} articles</div>
+                <h3 class="issue-card-title">${escapeHtml(newsletter.issue_title || newsletter.title || "Newsletter edition")}</h3>
+                <p class="issue-card-date">${escapeHtml(newsletter.issue_date || newsletter.published_date || "")}</p>
+                <p class="issue-card-copy">${escapeHtml(newsletter.published_date || "")}</p>
+                <div class="issue-card-actions">
+                  <button class="secondary" type="button" data-action="open-issue-card" data-detail-url="${escapeHtml(newsletter.detail_url || "")}">
+                    Read edition
+                  </button>
+                </div>
+              </article>
+            `,
+          )
+          .join("");
+      }
+
       function setData(data, sourceLabel) {
         state.newsletters = Array.isArray(data.newsletters) ? data.newsletters : [];
         state.newsletterMap = new Map(state.newsletters.map((newsletter) => [newsletter.detail_url, newsletter]));
         state.records = flattenNewsletters(state.newsletters);
+        state.currentYearFilter = state.newsletters.length ? String(state.newsletters[0].year || "") : "";
         datasetCountNode.textContent = state.records.length.toLocaleString();
         sourceNameNode.textContent = sourceLabel;
         statusNode.textContent = `Loaded ${state.records.length} article records from ${sourceLabel}.`;
+        renderIssueBrowser();
       }
 
       async function tryAutoLoad() {
-        try {
-          const response = await fetch("./laburnum_enews_this_year.json", { cache: "no-store" });
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+        const candidates = ["./laburnum_enews_archive.json", "./laburnum_enews_this_year.json"];
+        for (const candidate of candidates) {
+          try {
+            const response = await fetch(candidate, { cache: "no-store" });
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+            setData(await response.json(), candidate.replace("./", ""));
+            runSearchFromUrl();
+            return;
+          } catch (error) {
+            continue;
           }
-          setData(await response.json(), "laburnum_enews_this_year.json");
-          runSearchFromUrl();
-        } catch (error) {
-          sourceNameNode.textContent = "manual upload";
-          statusNode.textContent =
-            "Auto-load did not work. If you opened this file directly, choose the JSON file below or serve this folder locally.";
         }
+
+        sourceNameNode.textContent = "manual upload";
+        statusNode.textContent =
+          "Auto-load did not work. If you opened this file directly, choose the JSON file below or serve this folder locally.";
       }
 
       function buildSnippet(text, query) {
@@ -1082,7 +1175,7 @@
         }
 
         if (!results.length) {
-          renderEmpty(`No matches found for "${query}". Try a broader keyword or load a different JSON file.`);
+          renderEmpty(`No matches found for "${query}". Try a broader keyword or choose a newsletter card above.`);
           return;
         }
 
@@ -1092,7 +1185,7 @@
             (result, index) => `
               <article class="clip-card">
                 ${renderClipImage(result)}
-                <div class="clip-meta">${escapeHtml(result.publishedDate)} · ${result.hitCount} hit${result.hitCount === 1 ? "" : "s"} · ${escapeHtml(String(result.articleCount))} article issue</div>
+                <div class="clip-meta">${escapeHtml(String(result.year || ""))} · ${escapeHtml(result.publishedDate)} · ${result.hitCount} hit${result.hitCount === 1 ? "" : "s"} · ${escapeHtml(String(result.articleCount))} article issue</div>
                 <h2 class="clip-title">${escapeHtml(result.articleTitle)}</h2>
                 <p class="clip-issue">${escapeHtml(result.issueTitle)}${result.issueDate ? ` · ${escapeHtml(result.issueDate)}` : ""}</p>
                 <p class="clip-snippet">${highlightText(result.snippet, query)}</p>
@@ -1302,6 +1395,20 @@
           closeEdition();
           runSearch(queryInput.value);
         });
+      });
+
+      yearFiltersNode.addEventListener("click", (event) => {
+        const yearButton = event.target.closest('[data-action="filter-year"]');
+        if (!yearButton) return;
+        state.currentYearFilter = yearButton.dataset.year || "";
+        renderIssueBrowser();
+      });
+
+      issueCardsNode.addEventListener("click", (event) => {
+        const openButton = event.target.closest('[data-action="open-issue-card"]');
+        if (!openButton) return;
+        const detailUrl = openButton.dataset.detailUrl || "";
+        if (detailUrl) openEdition(detailUrl);
       });
 
       resultsNode.addEventListener("click", (event) => {
