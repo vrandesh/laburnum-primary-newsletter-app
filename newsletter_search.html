@@ -467,6 +467,19 @@
         min-width: 0;
       }
 
+      .viewer-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .viewer-toolbar .secondary,
+      .viewer-toolbar .primary {
+        padding: 12px 14px;
+      }
+
       .viewer-kicker {
         margin: 0;
         color: var(--warm);
@@ -743,6 +756,16 @@
           grid-template-columns: 1fr;
         }
 
+        .viewer-topbar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .viewer-toolbar {
+          justify-content: stretch;
+          width: 100%;
+        }
+
         .viewer-shell,
         .photo-shell {
           width: calc(100% - 10px);
@@ -768,10 +791,32 @@
           font-size: clamp(2.3rem, 13vw, 3.9rem);
         }
 
+        .subhead {
+          font-size: 0.96rem;
+          line-height: 1.55;
+        }
+
+        .search-bar button {
+          width: 100%;
+        }
+
         .clip-card,
         .edition-article,
         .issue-card {
           padding: 18px;
+        }
+
+        .results-actions,
+        .issue-card-actions,
+        .viewer-toolbar {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+        .results-actions > button,
+        .issue-card-actions > button,
+        .viewer-toolbar > button {
+          width: 100%;
         }
 
         .issue-grid,
@@ -782,6 +827,139 @@
         .article-media img,
         .edition-article.featured .article-media img {
           height: 220px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .page {
+          width: calc(100% - 10px);
+          padding: 8px 0 24px;
+        }
+
+        .masthead {
+          padding: 16px 14px 18px;
+          border-radius: 18px;
+        }
+
+        .search-desk,
+        .browse-shell,
+        .results-shell {
+          padding: 14px;
+          border-radius: 18px;
+        }
+
+        .masthead-top {
+          gap: 8px;
+          font-size: 0.75rem;
+          letter-spacing: 0.05em;
+        }
+
+        .brand {
+          margin-top: 14px;
+          font-size: clamp(2rem, 12vw, 3.2rem);
+        }
+
+        #query {
+          padding: 14px 16px;
+          font-size: 16px;
+        }
+
+        .chip,
+        .year-filter {
+          padding: 9px 12px;
+          font-size: 0.84rem;
+        }
+
+        .toolline {
+          display: grid;
+          gap: 10px;
+        }
+
+        .tool-badge {
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        .browse-title {
+          font-size: 1.65rem;
+        }
+
+        .issue-summary,
+        .summary,
+        .results-note {
+          font-size: 0.9rem;
+        }
+
+        .clip-title {
+          font-size: 1.45rem;
+        }
+
+        .clip-snippet,
+        .issue-card-date,
+        .issue-card-copy,
+        .clip-issue,
+        .paragraph-copy {
+          font-size: 0.94rem;
+          line-height: 1.55;
+        }
+
+        .clip-image {
+          max-height: 220px;
+        }
+
+        .viewer-shell,
+        .photo-shell {
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          border-radius: 0;
+        }
+
+        .viewer-topbar {
+          padding: 12px 12px 10px;
+        }
+
+        .viewer-title {
+          font-size: 1.35rem;
+        }
+
+        .viewer-kicker {
+          font-size: 0.68rem;
+        }
+
+        .viewer-close {
+          height: auto;
+          min-height: 44px;
+        }
+
+        .edition-nav,
+        .edition-main {
+          padding: 14px 12px;
+        }
+
+        .edition-nameplate {
+          font-size: 1.55rem;
+        }
+
+        .edition-headline {
+          font-size: 2.05rem;
+        }
+
+        .article-headline {
+          font-size: 1.55rem;
+        }
+
+        .article-body,
+        .edition-article.featured .article-body {
+          column-count: 1;
+        }
+
+        .photo-toolbar h3 {
+          font-size: 1.2rem;
+        }
+
+        .photo-caption {
+          font-size: 0.86rem;
         }
       }
     </style>
@@ -865,7 +1043,11 @@
             <p class="viewer-kicker">Formatted issue reader</p>
             <h2 class="viewer-title" id="viewer-title">Newsletter edition</h2>
           </div>
-          <button class="viewer-close secondary" type="button" data-action="close-viewer" aria-label="Close issue reader">X</button>
+          <div class="viewer-toolbar">
+            <button class="secondary" type="button" data-action="download-edition-html">Download newspaper HTML</button>
+            <button class="primary" type="button" data-action="print-edition">Print or save PDF</button>
+            <button class="viewer-close secondary" type="button" data-action="close-viewer" aria-label="Close issue reader">X</button>
+          </div>
         </div>
         <div class="viewer-layout">
           <aside class="edition-nav">
@@ -897,7 +1079,9 @@
       </section>
     </div>
 
+    <script src="./latest_newsletter.js"></script>
     <script>
+      const embeddedLatestNewsletter = window.__LATEST_NEWSLETTER__ || null;
       const state = {
         newsletters: [],
         newsletterMap: new Map(),
@@ -1031,6 +1215,9 @@
                   <button class="secondary" type="button" data-action="open-issue-card" data-detail-url="${escapeHtml(newsletter.detail_url || "")}">
                     Read edition
                   </button>
+                  <button class="source-link" type="button" data-action="download-issue-card" data-detail-url="${escapeHtml(newsletter.detail_url || "")}">
+                    Download newspaper
+                  </button>
                 </div>
               </article>
             `,
@@ -1089,6 +1276,22 @@
           } catch (error) {
             continue;
           }
+        }
+
+        if (embeddedLatestNewsletter) {
+          const year = embeddedLatestNewsletter.year || embeddedLatestNewsletter.issue_year || embeddedLatestNewsletter.published_year || "";
+          setData(
+            {
+              newsletters: [embeddedLatestNewsletter],
+              newsletter_count: 1,
+              years: year ? [{ year, issue_count: 1 }] : [],
+            },
+            "embedded latest edition",
+          );
+          statusNode.textContent =
+            "Loaded the embedded latest edition. For the full archive, open this folder through a local server or deploy the site publicly.";
+          runSearchFromUrl();
+          return;
         }
 
         sourceNameNode.textContent = "manual upload";
@@ -1220,6 +1423,61 @@
           : "";
       }
 
+      function getLatestArticleRecord() {
+        const latestNewsletter = state.newsletters[0];
+        const latestArticle = latestNewsletter?.articles?.[0];
+        if (!latestNewsletter || !latestArticle) return null;
+
+        return {
+          year: latestNewsletter.year || latestNewsletter.issue_year || latestNewsletter.published_year || "",
+          publishedDate: latestNewsletter.published_date || latestNewsletter.issue_date || "",
+          issueDate: latestNewsletter.issue_date || latestNewsletter.published_date || "",
+          issueTitle: latestNewsletter.issue_title || latestNewsletter.title || "Latest edition",
+          articleTitle: latestArticle.title || "Latest article",
+          articleCount: latestNewsletter.article_count || latestNewsletter.articles.length || 0,
+          detailUrl: latestNewsletter.detail_url || "",
+          bodyText: latestArticle.body_text || "",
+          leadImage:
+            Array.isArray(latestArticle.image_urls) && latestArticle.image_urls.length ? latestArticle.image_urls[0] : "",
+          relevantParagraphs: splitParagraphs(latestArticle.body_text || "").slice(0, 2),
+        };
+      }
+
+      function showLatestArticle() {
+        const latest = getLatestArticleRecord();
+        if (!latest) {
+          renderEmpty("Latest newsletter article is not available yet.");
+          return;
+        }
+
+        summaryNode.textContent = `Latest published article · ${latest.issueDate}`;
+        resultsNode.innerHTML = `
+          <article class="clip-card">
+            ${renderClipImage(latest)}
+            <div class="clip-meta">${escapeHtml(String(latest.year || ""))} · ${escapeHtml(latest.publishedDate)} · ${escapeHtml(String(latest.articleCount))} article issue</div>
+            <h2 class="clip-title">${escapeHtml(latest.articleTitle)}</h2>
+            <p class="clip-issue">${escapeHtml(latest.issueTitle)}${latest.issueDate ? ` · ${escapeHtml(latest.issueDate)}` : ""}</p>
+            <p class="clip-snippet">${escapeHtml(buildSnippet(latest.bodyText, latest.articleTitle))}</p>
+            <div class="results-actions">
+              <button class="reveal-button" type="button" data-action="open-latest-edition" data-detail-url="${escapeHtml(latest.detailUrl)}" data-article-title="${escapeHtml(latest.articleTitle)}">
+                Read latest article
+              </button>
+              <button class="source-link" type="button" data-action="download-latest-edition" data-detail-url="${escapeHtml(latest.detailUrl)}">
+                Download newspaper
+              </button>
+            </div>
+            <div class="paragraph-panel">
+              <p class="paragraph-label">Latest excerpt</p>
+              ${
+                latest.relevantParagraphs.length
+                  ? latest.relevantParagraphs.map((paragraph) => `<p class="paragraph-copy">${escapeHtml(paragraph)}</p>`).join("")
+                  : `<p class="paragraph-copy">${escapeHtml(latest.bodyText.slice(0, 900))}</p>`
+              }
+            </div>
+          </article>
+        `;
+      }
+
       function renderResults(query, results) {
         state.currentResults = results;
         state.currentQuery = query;
@@ -1251,6 +1509,9 @@
                   </button>
                   <button class="secondary" type="button" data-action="open-edition" data-index="${index}">
                     Read full edition
+                  </button>
+                  <button class="source-link" type="button" data-action="download-result-edition" data-index="${index}">
+                    Download newspaper
                   </button>
                 </div>
                 <div class="paragraph-panel" id="paragraph-${index}" hidden>
@@ -1295,6 +1556,380 @@
             `,
           )
           .join("");
+      }
+
+      function slugifyFilename(value) {
+        return String(value || "laburnum-newsletter")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .slice(0, 80) || "laburnum-newsletter";
+      }
+
+      function buildPrintableArticleBody(article) {
+        return splitParagraphs(article.body_text || "")
+          .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
+          .join("");
+      }
+
+      function buildPrintableArticleMedia(article, articleIndex) {
+        const imageUrls = Array.isArray(article.image_urls) ? article.image_urls : [];
+        if (!imageUrls.length) return "";
+
+        const maxImages = articleIndex === 0 ? 3 : 4;
+        const layoutClass = imageUrls.length === 1 ? "single" : "gallery";
+
+        return `
+          <div class="np-media ${layoutClass}">
+            ${imageUrls
+              .slice(0, maxImages)
+              .map(
+                (imageUrl, imageIndex) => `
+                  <figure class="np-figure">
+                    <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml((article.title || `Article ${articleIndex + 1}`) + ` photo ${imageIndex + 1}`)}" />
+                  </figure>
+                `,
+              )
+              .join("")}
+          </div>
+        `;
+      }
+
+      function buildPrintableSections(newsletter) {
+        const articles = Array.isArray(newsletter.articles) ? newsletter.articles : [];
+        if (!articles.length) {
+          return `<section class="np-empty"><p>No article copy was found for this edition.</p></section>`;
+        }
+
+        const [leadArticle, ...restArticles] = articles;
+
+        const leadMarkup = `
+          <section class="np-lead">
+            <div class="np-lead-copy">
+              <p class="np-kicker">Lead story</p>
+              <h2>${escapeHtml(leadArticle.title || "Lead article")}</h2>
+              <div class="np-byline">Laburnum Primary School community edition</div>
+              <div class="np-lead-body">
+                ${buildPrintableArticleBody(leadArticle)}
+              </div>
+            </div>
+            <div class="np-lead-media-wrap">
+              ${buildPrintableArticleMedia(leadArticle, 0)}
+            </div>
+          </section>
+        `;
+
+        const restMarkup = restArticles
+          .map(
+            (article, index) => `
+              <article class="np-story">
+                <p class="np-kicker">Article ${index + 2}</p>
+                <h3>${escapeHtml(article.title || `Article ${index + 2}`)}</h3>
+                ${buildPrintableArticleMedia(article, index + 1)}
+                <div class="np-story-body">
+                  ${buildPrintableArticleBody(article)}
+                </div>
+              </article>
+            `,
+          )
+          .join("");
+
+        return `
+          ${leadMarkup}
+          <section class="np-story-grid">
+            ${restMarkup}
+          </section>
+        `;
+      }
+
+      function buildPrintableEditionHtml(newsletter) {
+        const articleCount = Array.isArray(newsletter.articles) ? newsletter.articles.length : 0;
+        const dateLabel = newsletter.issue_date || newsletter.published_date || "";
+        const issueTitle = newsletter.issue_title || newsletter.title || "Laburnum Newsletter";
+        const editionName = `${issueTitle} - ${dateLabel}`.trim();
+
+        return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(editionName || "Laburnum Newsletter")}</title>
+    <style>
+      :root {
+        --paper: #f7f0e4;
+        --paper-strong: #fffaf1;
+        --ink: #17120d;
+        --muted: #5f5548;
+        --rule: rgba(56, 42, 26, 0.22);
+        --accent: #1f5c47;
+        --warm: #8e4d26;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      .np-page {
+        width: min(1280px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 42px;
+      }
+
+      .np-paper {
+        padding: 28px;
+        border: 1px solid var(--rule);
+        background: var(--paper-strong);
+      }
+
+      .np-topline,
+      .np-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        color: var(--muted);
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+      }
+
+      .np-topline {
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .np-masthead {
+        margin: 18px 0 10px;
+        font-size: clamp(52px, 9vw, 108px);
+        line-height: 0.9;
+        text-align: center;
+        letter-spacing: -0.07em;
+        font-weight: 700;
+      }
+
+      .np-strap {
+        max-width: 840px;
+        margin: 0 auto 18px;
+        color: var(--muted);
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 16px;
+        line-height: 1.65;
+        text-align: center;
+      }
+
+      .np-meta {
+        padding: 12px 0 18px;
+        border-top: 3px double var(--rule);
+        border-bottom: 3px double var(--rule);
+        margin-bottom: 24px;
+      }
+
+      .np-lead {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+        gap: 24px;
+        padding-bottom: 26px;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .np-kicker {
+        margin: 0 0 10px;
+        color: var(--warm);
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .np-lead h2,
+      .np-story h3 {
+        margin: 0;
+        line-height: 0.96;
+        letter-spacing: -0.04em;
+      }
+
+      .np-lead h2 {
+        font-size: clamp(36px, 4vw, 62px);
+      }
+
+      .np-story h3 {
+        font-size: 34px;
+      }
+
+      .np-byline {
+        margin: 12px 0 18px;
+        color: var(--accent);
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .np-lead-body,
+      .np-story-body {
+        column-count: 2;
+        column-gap: 24px;
+        font-size: 18px;
+        line-height: 1.72;
+      }
+
+      .np-story-body {
+        font-size: 17px;
+      }
+
+      .np-lead-body p,
+      .np-story-body p {
+        margin: 0 0 14px;
+        break-inside: avoid;
+      }
+
+      .np-media {
+        display: grid;
+        gap: 12px;
+      }
+
+      .np-media.gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .np-media.single {
+        grid-template-columns: 1fr;
+      }
+
+      .np-figure {
+        margin: 0;
+      }
+
+      .np-figure img {
+        width: 100%;
+        display: block;
+        border: 1px solid var(--rule);
+        object-fit: cover;
+        background: #fff;
+      }
+
+      .np-lead-media-wrap .np-figure img {
+        min-height: 240px;
+        max-height: 560px;
+      }
+
+      .np-story-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+        margin-top: 24px;
+      }
+
+      .np-story {
+        padding-top: 18px;
+        border-top: 1px solid var(--rule);
+      }
+
+      .np-empty {
+        padding: 24px 0;
+        color: var(--muted);
+      }
+
+      @page {
+        margin: 14mm;
+        size: A4 portrait;
+      }
+
+      @media (max-width: 960px) {
+        .np-lead,
+        .np-story-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .np-lead-body,
+        .np-story-body {
+          column-count: 1;
+        }
+      }
+
+      @media print {
+        body {
+          background: #fff;
+        }
+
+        .np-page {
+          width: auto;
+          margin: 0;
+          padding: 0;
+        }
+
+        .np-paper {
+          border: 0;
+          padding: 0;
+          background: #fff;
+        }
+
+        .np-story,
+        .np-lead {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="np-page">
+      <article class="np-paper">
+        <header>
+          <div class="np-topline">
+            <span>Laburnum Primary School</span>
+            <span>Community newspaper edition</span>
+          </div>
+          <h1 class="np-masthead">${escapeHtml(issueTitle)}</h1>
+          <p class="np-strap">A printable archive edition rebuilt from the school newsletter, styled for families who want a cleaner newspaper reading and download experience.</p>
+          <div class="np-meta">
+            <span>${escapeHtml(dateLabel)}</span>
+            <span>${articleCount} article${articleCount === 1 ? "" : "s"}</span>
+            <span>Laburnum archive reader</span>
+          </div>
+        </header>
+        ${buildPrintableSections(newsletter)}
+      </article>
+    </main>
+  </body>
+</html>`;
+      }
+
+      function downloadEditionHtml(detailUrl) {
+        const newsletter = state.newsletterMap.get(detailUrl);
+        if (!newsletter) return;
+        const html = buildPrintableEditionHtml(newsletter);
+        const filename = `${slugifyFilename(newsletter.issue_title || newsletter.title || "laburnum-newsletter")}-${slugifyFilename(newsletter.issue_date || newsletter.published_date || "")}.html`;
+        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      }
+
+      function printEdition(detailUrl) {
+        const newsletter = state.newsletterMap.get(detailUrl);
+        if (!newsletter) return;
+        const printWindow = window.open("", "_blank", "noopener,noreferrer,width=1200,height=900");
+        if (!printWindow) return;
+        const html = buildPrintableEditionHtml(newsletter);
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.onload = () => {
+          printWindow.print();
+        };
       }
 
       function renderArticleMedia(newsletter, article, articleIndex) {
@@ -1423,7 +2058,7 @@
           renderResults(initialQuery, searchRecords(initialQuery));
         } else {
           setActiveChip("");
-          renderEmpty("Try a keyword or phrase to search the newsletters.");
+          showLatestArticle();
         }
 
         if (issueId) {
@@ -1442,7 +2077,11 @@
         queryInput.value = "";
         closeEdition();
         setActiveChip("");
-        renderEmpty("Try a keyword or phrase to search the newsletters.");
+        if (state.newsletters.length) {
+          showLatestArticle();
+        } else {
+          renderEmpty("Try a keyword or phrase to search the newsletters.");
+        }
       });
 
       document.querySelectorAll(".chip").forEach((button) => {
@@ -1467,6 +2106,13 @@
         if (detailUrl) openEdition(detailUrl);
       });
 
+      issueCardsNode.addEventListener("click", (event) => {
+        const downloadButton = event.target.closest('[data-action="download-issue-card"]');
+        if (!downloadButton) return;
+        const detailUrl = downloadButton.dataset.detailUrl || "";
+        if (detailUrl) downloadEditionHtml(detailUrl);
+      });
+
       resultsNode.addEventListener("click", (event) => {
         const toggle = event.target.closest('[data-action="toggle-paragraph"]');
         if (toggle) {
@@ -1488,6 +2134,28 @@
         if (openEditionButton) {
           const result = state.currentResults[Number(openEditionButton.dataset.index)];
           if (result) openEdition(result.detailUrl, result.articleTitle);
+          return;
+        }
+
+        const latestEditionButton = event.target.closest('[data-action="open-latest-edition"]');
+        if (latestEditionButton) {
+          const detailUrl = latestEditionButton.dataset.detailUrl || "";
+          const articleTitle = latestEditionButton.dataset.articleTitle || "";
+          if (detailUrl) openEdition(detailUrl, articleTitle);
+          return;
+        }
+
+        const downloadEditionButton = event.target.closest('[data-action="download-result-edition"]');
+        if (downloadEditionButton) {
+          const result = state.currentResults[Number(downloadEditionButton.dataset.index)];
+          if (result) downloadEditionHtml(result.detailUrl);
+          return;
+        }
+
+        const latestDownloadButton = event.target.closest('[data-action="download-latest-edition"]');
+        if (latestDownloadButton) {
+          const detailUrl = latestDownloadButton.dataset.detailUrl || "";
+          if (detailUrl) downloadEditionHtml(detailUrl);
         }
       });
 
@@ -1495,6 +2163,18 @@
         const closeTrigger = event.target.closest('[data-action="close-viewer"]');
         if (closeTrigger) {
           closeEdition();
+          return;
+        }
+
+        const downloadTrigger = event.target.closest('[data-action="download-edition-html"]');
+        if (downloadTrigger) {
+          downloadEditionHtml(state.currentEditionUrl);
+          return;
+        }
+
+        const printTrigger = event.target.closest('[data-action="print-edition"]');
+        if (printTrigger) {
+          printEdition(state.currentEditionUrl);
           return;
         }
 

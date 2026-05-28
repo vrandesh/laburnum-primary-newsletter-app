@@ -17,6 +17,7 @@ ARCHIVE_URLS = [
     "https://www.laburnumps.vic.edu.au/enews/past_years",
 ]
 DEFAULT_OUTPUT = "laburnum_enews_archive.json"
+DEFAULT_PROBE_FORWARD = 8
 
 
 class TextExtractor(HTMLParser):
@@ -73,6 +74,13 @@ def normalize_whitespace(value: str) -> str:
 
 def infer_year(value: str) -> int | None:
     match = re.search(r"(20\d{2})", value)
+    if not match:
+        return None
+    return int(match.group(1))
+
+
+def extract_detail_id(value: str) -> int | None:
+    match = re.search(r"/details/(\d+)$", value)
     if not match:
         return None
     return int(match.group(1))
@@ -192,11 +200,58 @@ def parse_newsletter_detail(detail_html: str, detail_url: str) -> dict[str, Any]
     }
 
 
-def scrape_newsletters(archive_urls: list[str], verify_ssl: bool) -> dict[str, Any]:
+def is_live_newsletter(detail_data: dict[str, Any]) -> bool:
+    issue_date = normalize_whitespace(detail_data.get("issue_date", ""))
+    issue_title = normalize_whitespace(detail_data.get("issue_title", ""))
+    articles = detail_data.get("articles", [])
+    if not issue_title or not issue_date or not articles:
+        return False
+    if "test" in issue_title.lower() or "test" in issue_date.lower():
+        return False
+    return True
+
+
+def build_probed_card(detail_id: int, detail_data: dict[str, Any]) -> dict[str, Any]:
+    lead_image = ""
+    articles = detail_data.get("articles", [])
+    if articles:
+        image_urls = articles[0].get("image_urls", [])
+        if image_urls:
+            lead_image = image_urls[0]
+
+    return {
+        "title": detail_data.get("issue_title", "LPS eNews"),
+        "published_date": detail_data.get("issue_date", ""),
+        "published_iso_date": detail_data.get("issue_iso_date", ""),
+        "published_year": detail_data.get("issue_year"),
+        "sort_key": detail_data.get("issue_sort_key", 0),
+        "archive_relative_url": f"details/{detail_id}",
+        "detail_url": detail_data.get("detail_url", ""),
+        "image_url": lead_image,
+        "archive_source": "probed_hidden_issue",
+    }
+
+
+def scrape_newsletters(archive_urls: list[str], verify_ssl: bool, probe_forward: int = DEFAULT_PROBE_FORWARD) -> dict[str, Any]:
     archive_cards: list[dict[str, Any]] = []
     for archive_url in archive_urls:
         archive_html = fetch_html(archive_url, verify_ssl=verify_ssl)
         archive_cards.extend(parse_archive_cards(archive_html, archive_url))
+
+    known_detail_urls = {card["detail_url"] for card in archive_cards}
+    known_detail_ids = [extract_detail_id(card["detail_url"]) for card in archive_cards]
+    max_known_detail_id = max((detail_id for detail_id in known_detail_ids if detail_id is not None), default=None)
+
+    if max_known_detail_id is not None and probe_forward > 0:
+        for detail_id in range(max_known_detail_id + 1, max_known_detail_id + probe_forward + 1):
+            detail_url = f"https://www.laburnumps.vic.edu.au/enews/details/{detail_id}"
+            if detail_url in known_detail_urls:
+                continue
+            detail_html = fetch_html(detail_url, verify_ssl=verify_ssl)
+            detail_data = parse_newsletter_detail(detail_html, detail_url)
+            if is_live_newsletter(detail_data):
+                archive_cards.append(build_probed_card(detail_id, detail_data))
+                known_detail_urls.add(detail_url)
 
     newsletters = []
     for card in archive_cards:
@@ -229,13 +284,29 @@ def load_or_fetch_data(
     archive_urls: list[str],
     output_path: Path,
     verify_ssl: bool,
-    refresh: bool,
-) -> tuple[dict[str, Any], bool]:
+        refresh: bool,
+    ) -> tuple[dict[str, Any], bool]:
     if output_path.exists() and not refresh:
         return json.loads(output_path.read_text(encoding="utf-8")), True
     data = scrape_newsletters(archive_urls, verify_ssl=verify_ssl)
     output_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     return data, False
+
+
+def write_latest_newsletter_js(output_path: Path, data: dict[str, Any]) -> Path | None:
+    newsletters = data.get("newsletters", [])
+    if not newsletters:
+        return None
+
+    latest_newsletter_path = output_path.with_name("latest_newsletter.js")
+    latest_newsletter = newsletters[0]
+    latest_newsletter_path.write_text(
+        "window.__LATEST_NEWSLETTER__ = "
+        + json.dumps(latest_newsletter, ensure_ascii=False)
+        + ";\n",
+        encoding="utf-8",
+    )
+    return latest_newsletter_path
 
 
 def count_occurrences(text: str, keyword_pattern: re.Pattern[str]) -> int:
@@ -362,8 +433,11 @@ def main() -> None:
         verify_ssl=args.verify_ssl,
         refresh=args.refresh,
     )
+    latest_newsletter_path = write_latest_newsletter_js(output_path, data)
 
     print_fetch_summary(data, output_path, loaded_from_cache)
+    if latest_newsletter_path:
+        print(f"Wrote latest-edition fallback at {latest_newsletter_path.resolve()}")
 
     if args.keyword:
         print()
