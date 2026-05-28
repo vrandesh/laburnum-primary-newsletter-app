@@ -536,6 +536,32 @@
         border-bottom: 1px solid var(--rule);
       }
 
+      .toc-toggle {
+        display: none;
+        width: 100%;
+        margin-top: 14px;
+        padding: 12px 14px;
+        color: var(--ink);
+        text-align: left;
+        border-color: rgba(54, 43, 28, 0.12);
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .toc-toggle-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .toc-toggle-icon {
+        display: inline-block;
+        transition: transform 160ms ease;
+      }
+
+      .edition-nav[data-mobile-collapsed="false"] .toc-toggle-icon {
+        transform: rotate(180deg);
+      }
+
       .edition-nameplate {
         margin: 0;
         font-size: 2rem;
@@ -937,6 +963,15 @@
           padding: 14px 12px;
         }
 
+        .toc-toggle {
+          display: block;
+        }
+
+        .edition-nav[data-mobile-collapsed="true"] .toc-title,
+        .edition-nav[data-mobile-collapsed="true"] .toc-list {
+          display: none;
+        }
+
         .edition-nameplate {
           font-size: 1.55rem;
         }
@@ -1052,6 +1087,9 @@
         <div class="viewer-layout">
           <aside class="edition-nav">
             <div id="edition-meta" class="edition-meta"></div>
+            <button class="toc-toggle" type="button" data-action="toggle-mobile-toc" aria-expanded="false">
+              <span class="toc-toggle-label">Contents <span class="toc-toggle-icon">▾</span></span>
+            </button>
             <p class="toc-title">Contents</p>
             <div id="edition-toc" class="toc-list"></div>
           </aside>
@@ -1105,9 +1143,11 @@
       const issueCardsNode = document.getElementById("issue-cards");
       const issueSummaryNode = document.getElementById("issue-summary");
       const viewerNode = document.getElementById("viewer");
+      const editionNavNode = document.querySelector(".edition-nav");
       const editionMetaNode = document.getElementById("edition-meta");
       const editionTocNode = document.getElementById("edition-toc");
       const editionMainNode = document.getElementById("edition-main");
+      const tocToggleNode = document.querySelector(".toc-toggle");
       const viewerTitleNode = document.getElementById("viewer-title");
       const photoViewerNode = document.getElementById("photo-viewer");
       const photoViewerTitleNode = document.getElementById("photo-viewer-title");
@@ -1558,6 +1598,17 @@
           .join("");
       }
 
+      function isMobileReaderMode() {
+        return window.matchMedia("(max-width: 560px)").matches;
+      }
+
+      function setMobileTocCollapsed(collapsed) {
+        if (!editionNavNode || !tocToggleNode) return;
+        const shouldCollapse = isMobileReaderMode() ? collapsed : false;
+        editionNavNode.dataset.mobileCollapsed = shouldCollapse ? "true" : "false";
+        tocToggleNode.setAttribute("aria-expanded", shouldCollapse ? "false" : "true");
+      }
+
       function slugifyFilename(value) {
         return String(value || "laburnum-newsletter")
           .toLowerCase()
@@ -1996,6 +2047,7 @@
         viewerTitleNode.textContent = newsletter.issue_title || newsletter.title || "Newsletter edition";
         editionMetaNode.innerHTML = buildEditionMeta(newsletter);
         editionTocNode.innerHTML = buildEditionTOC(newsletter, focusedIndex);
+        setMobileTocCollapsed(true);
         editionMainNode.innerHTML = `
           <header class="edition-header">
             <p class="edition-volume">Laburnum archive issue</p>
@@ -2195,6 +2247,16 @@
             button.classList.toggle("active", index === articleIndex);
           });
           document.getElementById(`edition-article-${articleIndex}`)?.scrollIntoView({ block: "start", behavior: "smooth" });
+          if (isMobileReaderMode()) {
+            setMobileTocCollapsed(true);
+          }
+          return;
+        }
+
+        const tocToggleTrigger = event.target.closest('[data-action="toggle-mobile-toc"]');
+        if (tocToggleTrigger) {
+          const nextCollapsed = editionNavNode?.dataset.mobileCollapsed !== "true";
+          setMobileTocCollapsed(nextCollapsed);
         }
       });
 
@@ -2211,6 +2273,12 @@
         }
         if (event.key === "Escape" && !viewerNode.hidden) {
           closeEdition();
+        }
+      });
+
+      window.addEventListener("resize", () => {
+        if (!viewerNode.hidden) {
+          setMobileTocCollapsed(editionNavNode?.dataset.mobileCollapsed !== "false");
         }
       });
 
